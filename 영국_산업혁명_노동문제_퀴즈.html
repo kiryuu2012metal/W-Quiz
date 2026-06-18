@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영국 산업혁명 노동 문제와 사회 개혁 입법 — 점검 퀴즈</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --line: #e2e0db;
+    --accent: #3a6ea5;
+    --accent-soft: #eaf1f8;
+    --correct: #2e7d56;
+    --correct-soft: #e8f5ee;
+    --wrong: #c0392b;
+    --wrong-soft: #fae9e7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .bar-track { height: 6px; background: var(--line); border-radius: 99px; margin: 18px 0 6px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+  }
+  .q { font-size: 1.08rem; font-weight: 600; line-height: 1.5; margin-bottom: 18px; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 13px 15px; margin-bottom: 10px; cursor: pointer;
+    transition: all 0.15s ease; font-size: 0.98rem;
+  }
+  .opt:hover { border-color: var(--accent); background: #fafbfc; }
+  .opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.correct { border-color: var(--correct); background: var(--correct-soft); }
+  .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { background: var(--card); border-color: var(--line); }
+  .opt.disabled.selected:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .opt.disabled.correct:hover { background: var(--correct-soft); border-color: var(--correct); }
+  .opt.disabled.wrong:hover { background: var(--wrong-soft); border-color: var(--wrong); }
+  .num {
+    flex: 0 0 24px; height: 24px; border-radius: 6px;
+    background: var(--bg); color: var(--muted);
+    font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.correct .num { background: var(--correct); color: #fff; }
+  .opt.wrong .num { background: var(--wrong); color: #fff; }
+
+  .explain {
+    margin-top: 16px; border-left: 3px solid var(--accent);
+    background: #f9fafb; border-radius: 0 8px 8px 0;
+    padding: 14px 16px; font-size: 0.92rem; display: none;
+  }
+  .explain.show { display: block; }
+  .explain .verdict { font-weight: 700; margin-bottom: 6px; }
+  .explain .verdict.ok { color: var(--correct); }
+  .explain .verdict.no { color: var(--wrong); }
+  .explain .kw { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
+  .explain .kw b { color: var(--ink); }
+
+  .btn {
+    display: inline-block; border: none; border-radius: 10px;
+    padding: 12px 22px; font-size: 0.96rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:disabled { background: var(--line); color: #aaa; cursor: default; }
+  .btn-ghost { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--accent); }
+  .score-sub { color: var(--muted); margin-bottom: 4px; }
+  .review-item { border-top: 1px solid var(--line); padding: 13px 0; font-size: 0.92rem; }
+  .review-item:first-of-type { border-top: none; }
+  .review-item .ri-q { font-weight: 600; }
+  .review-item .ri-tag { font-size: 0.78rem; padding: 2px 8px; border-radius: 99px; margin-left: 6px; }
+  .ri-tag.ok { color: var(--correct); background: var(--correct-soft); }
+  .ri-tag.no { color: var(--wrong); background: var(--wrong-soft); }
+  .review-item .ri-detail { color: var(--muted); margin-top: 4px; font-size: 0.86rem; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>영국 산업혁명 노동 문제와 사회 개혁 입법 — 점검 퀴즈</h1>
+    <div class="sub">실전 모범답안 기반 · 핵심 득점 키워드 20문항</div>
+  </header>
+
+  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+  <div class="meta"><span id="counter">1 / 20</span><span id="modeLabel"></span></div>
+
+  <div id="quizView">
+    <div class="card">
+      <span class="tag" id="qtag">서론</span>
+      <div class="q" id="qtext"></div>
+      <div id="opts"></div>
+      <div class="explain" id="explain">
+        <div class="verdict" id="verdict"></div>
+        <div id="exptext"></div>
+        <div class="kw" id="kwtext"></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="checkBtn" disabled>정답 확인</button>
+        <button class="btn btn-primary hidden" id="nextBtn">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultView" class="hidden">
+    <div class="card">
+      <div class="score-sub">점수</div>
+      <div class="score-big"><span id="scoreNum">0</span> / <span id="scoreTot">20</span></div>
+      <div class="score-sub" id="scoreMsg"></div>
+      <div class="actions">
+        <button class="btn btn-primary hidden" id="retryWrongBtn">오답만 다시 풀기</button>
+        <button class="btn btn-ghost" id="retryAllBtn">전체 다시 풀기</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700; margin-bottom:6px;">문항별 결과</div>
+      <div id="reviewList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { tag:"서론", q:"영국의 산업혁명이 시작된 시기로 옳은 것은?",
+    options:["16세기 전반","17세기 중반","18세기 후반","19세기 후반"],
+    answer:2, exp:"영국의 산업혁명은 18세기 후반에 시작되어 생산력 증대와 함께 노동 문제를 낳았다.", kw:"18세기 후반 산업혁명" },
+  { tag:"서론", q:"산업혁명 초기 노동자들이 겪은 노동 문제로 거리가 먼 것은?",
+    options:["장시간 노동","저임금","열악한 작업 환경","8시간 노동제 보장"],
+    answer:3, exp:"초기 노동자는 장시간·저임금·열악한 환경에 시달렸고, 여성·아동 노동도 광범위했다. 8시간 노동제는 후대의 성과다.", kw:"장시간·저임금·여성아동 노동" },
+  { tag:"서론", q:"산업혁명 초기 영국 정부가 노동 문제에 개입하지 않고 유지한 경제 입장은?",
+    options:["중상주의","자유방임주의","보호무역주의","수정자본주의"],
+    answer:1, exp:"초기 정부는 자유방임주의를 유지하며 노동 문제에 적극 개입하지 않았다.", kw:"자유방임주의" },
+  { tag:"서론", q:"이 답안이 다루는 영국 사회 개혁 입법의 세 축으로 옳은 것은?",
+    options:["공장법·차티스트 운동·선거법 개정","권리장전·항해법·곡물법","인클로저·러다이트·구빈법","대헌장·청교도혁명·명예혁명"],
+    answer:0, exp:"답안은 공장법, 차티스트 운동, 선거법 개정을 중심으로 노동 문제 대응을 서술한다.", kw:"공장법·차티스트·선거법 개정" },
+  { tag:"공장법", q:"산업혁명 초기 공장의 1일 노동 시간으로 서술된 것은?",
+    options:["8시간 이상","10시간 이상","12시간 이상","16시간 이상"],
+    answer:2, exp:"초기 노동자는 하루 12시간 이상의 장시간 노동에 시달렸다.", kw:"12시간 이상 장시간 노동" },
+  { tag:"공장법", q:"국가가 노동 문제에 개입하기 시작한 전환점으로 평가되는 입법은?",
+    options:["1833년 공장법","1832년 선거법","1834년 구빈법","1846년 곡물법 폐지"],
+    answer:0, exp:"1833년 공장법은 국가가 노동 문제를 직접 개입할 사안으로 인식한 전환점이었다.", kw:"1833년 공장법" },
+  { tag:"공장법", q:"1833년 공장법이 노동을 금지한 아동의 연령 기준은?",
+    options:["7세 미만","9세 미만","12세 미만","14세 미만"],
+    answer:1, exp:"1833년 공장법은 9세 미만 아동의 공장 노동을 금지했다.", kw:"9세 미만 노동 금지" },
+  { tag:"공장법", q:"1833년 공장법이 도입해 국가가 공장을 직접 감독하게 한 제도는?",
+    options:["공장 감독관 제도","노동조합 등록제","최저임금제","공장 등록세"],
+    answer:0, exp:"공장 감독관 제도를 도입해 국가가 직접 공장을 감독하도록 한 점이 핵심이다.", kw:"공장 감독관 제도" },
+  { tag:"공장법", q:"1842년에 제정되어 부녀자·아동의 갱내 노동을 금지한 법은?",
+    options:["광산법","곡물법","구빈법","항해법"],
+    answer:0, exp:"1842년 광산법은 부녀자·아동의 갱내(광산) 노동을 금지했다.", kw:"1842년 광산법" },
+  { tag:"공장법", q:"노동시간 제한을 강화한 1847년의 입법은?",
+    options:["10시간 노동법","8시간 노동법","주5일제법","단결금지법"],
+    answer:0, exp:"1847년 10시간 노동법으로 노동시간 제한이 한층 강화되었다.", kw:"1847년 10시간 노동법" },
+  { tag:"선거제도", q:"산업화 이후에도 영국 선거제도가 여전히 중심으로 삼은 계층은?",
+    options:["도시 노동자","귀족·지주","산업 자본가","소작농"],
+    answer:1, exp:"산업화로 노동자·중산층이 늘었음에도 선거제도는 여전히 귀족·지주 중심이었다.", kw:"귀족·지주 중심 선거제" },
+  { tag:"선거제도", q:"제1차 선거법 개정이 이루어진 연도는?",
+    options:["1815년","1832년","1848년","1867년"],
+    answer:1, exp:"제1차 선거법 개정은 1832년에 이루어졌다.", kw:"1832년 제1차 선거법 개정" },
+  { tag:"선거제도", q:"제1차 선거법 개정으로 폐지된, 인구가 거의 없는데도 의원을 내던 선거구는?",
+    options:["부패 선거구","자치 선거구","대선거구","비례 선거구"],
+    answer:0, exp:"제1차 선거법 개정은 부패 선거구를 폐지하고 신흥 산업도시에 의석을 재배분했다.", kw:"부패 선거구 폐지" },
+  { tag:"선거제도", q:"제1차 선거법 개정으로 새롭게 선거권을 얻은 계층은?",
+    options:["신흥 산업도시의 중산층","도시 노동자","농촌 노동자","여성"],
+    answer:0, exp:"개정은 신흥 산업도시의 중산층(공장주 등)에게 선거권을 주었으나 노동자는 배제했다.", kw:"중산층 선거권" },
+  { tag:"선거제도", q:"제1차 선거법 개정이 노동자 계층에게 끼친 결과는?",
+    options:["선거권에서 배제됨","선거권을 얻음","피선거권만 얻음","의무투표 대상이 됨"],
+    answer:0, exp:"노동자 계층은 선거권에서 철저히 배제되었고, 이것이 정치적 자각의 계기가 되었다.", kw:"노동자 배제" },
+  { tag:"차티스트 운동", q:"노동자들의 정치적 요구가 분출된 차티스트 운동의 시기는?",
+    options:["1700년대","1830~40년대","1870~80년대","1900년대"],
+    answer:1, exp:"차티스트 운동은 1830~40년대에 걸쳐 전개된 대중 정치 운동이다.", kw:"1830~40년대 차티스트 운동" },
+  { tag:"차티스트 운동", q:"차티스트 운동에서 노동자들이 요구 사항을 담아 발표한 문서는?",
+    options:["인민헌장","권리청원","대헌장","인권선언"],
+    answer:0, exp:"노동자들은 인민헌장을 발표해 정치 개혁을 요구하며 의회에 청원했다.", kw:"인민헌장" },
+  { tag:"차티스트 운동", q:"인민헌장이 내건 요구로 거리가 먼 것은?",
+    options:["보통선거","비밀투표","의원 재산 자격 폐지","공장 국유화"],
+    answer:3, exp:"인민헌장은 보통선거·비밀투표·의원 재산 자격 폐지 등을 요구했다. 공장 국유화는 해당하지 않는다.", kw:"보통선거·비밀투표·재산자격 폐지" },
+  { tag:"차티스트 운동", q:"차티스트 운동의 역사적 의의로 가장 적절한 것은?",
+    options:["최초의 조직적 노동계급 정치 운동","최초의 무장 봉기","최초의 종교 개혁 운동","최초의 식민지 독립운동"],
+    answer:0, exp:"당대에는 좌절했으나, 노동계급이 조직적으로 정치 개혁을 요구한 최초의 대중 운동이었다.", kw:"조직적 노동계급 정치 운동" },
+  { tag:"차티스트 운동", q:"차티스트 운동의 압박이 장기적 토대가 되어 이어진 선거법 개정은?",
+    options:["1867년 2차·1884년 3차","1832년 1차·1867년 2차","1884년 3차·1918년 4차","1911년·1928년"],
+    answer:0, exp:"차티스트 운동의 압박은 1867년 제2차·1884년 제3차 선거법 개정으로 도시·농촌 노동자에게 선거권이 확대되는 토대가 되었다.", kw:"1867 2차 · 1884 3차" }
+];
+
+let pool = QUESTIONS.map((_, i) => i);
+let idx = 0;
+let answeredThisQ = false;
+let results = {};
+let isWrongRound = false;
+
+const $ = id => document.getElementById(id);
+
+function startRound(indices, wrongMode) {
+  pool = indices.slice();
+  idx = 0;
+  results = {};
+  isWrongRound = wrongMode;
+  $("resultView").classList.add("hidden");
+  $("quizView").classList.remove("hidden");
+  $("modeLabel").textContent = wrongMode ? "오답 복습 모드" : "";
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answeredThisQ = false;
+  const qi = pool[idx];
+  const Q = QUESTIONS[qi];
+  $("counter").textContent = (idx + 1) + " / " + pool.length;
+  $("bar").style.width = ((idx) / pool.length * 100) + "%";
+  $("qtag").textContent = Q.tag;
+  $("qtext").textContent = (qi + 1) + ". " + Q.q;
+
+  const optsBox = $("opts");
+  optsBox.innerHTML = "";
+  Q.options.forEach((text, i) => {
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.innerHTML = '<span class="num">' + (i + 1) + '</span><span>' + text + '</span>';
+    div.onclick = () => selectOption(div, i);
+    optsBox.appendChild(div);
+  });
+
+  $("explain").classList.remove("show");
+  $("checkBtn").classList.remove("hidden");
+  $("checkBtn").disabled = true;
+  $("nextBtn").classList.add("hidden");
+  $("nextBtn").textContent = (idx === pool.length - 1) ? "결과 보기 →" : "다음 →";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+let picked = -1;
+function selectOption(el, i) {
+  if (answeredThisQ) return;
+  picked = i;
+  document.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  $("checkBtn").disabled = false;
+}
+
+$("checkBtn").onclick = () => {
+  if (picked < 0) return;
+  answeredThisQ = true;
+  const qi = pool[idx];
+  const Q = QUESTIONS[qi];
+  const correct = (picked === Q.answer);
+  results[qi] = { picked, correct };
+
+  const opts = document.querySelectorAll(".opt");
+  opts.forEach((o, i) => {
+    o.classList.add("disabled");
+    if (i === Q.answer) o.classList.add("correct");
+    else if (i === picked) o.classList.add("wrong");
+  });
+
+  const v = $("verdict");
+  if (correct) { v.textContent = "정답입니다 ✓"; v.className = "verdict ok"; }
+  else { v.textContent = "오답입니다 ✗  정답: " + (Q.answer + 1) + "번"; v.className = "verdict no"; }
+  $("exptext").textContent = Q.exp;
+  $("kwtext").innerHTML = "답안 필수 키워드 → <b>" + Q.kw + "</b>";
+  $("explain").classList.add("show");
+
+  $("checkBtn").classList.add("hidden");
+  $("nextBtn").classList.remove("hidden");
+  picked = -1;
+};
+
+$("nextBtn").onclick = () => {
+  if (idx < pool.length - 1) { idx++; renderQuestion(); }
+  else showResult();
+};
+
+function showResult() {
+  $("bar").style.width = "100%";
+  $("quizView").classList.add("hidden");
+  $("resultView").classList.remove("hidden");
+
+  const answeredIdx = pool.slice();
+  const correctCount = answeredIdx.filter(qi => results[qi] && results[qi].correct).length;
+  const total = pool.length;
+  $("scoreNum").textContent = correctCount;
+  $("scoreTot").textContent = total;
+
+  const wrongIdx = answeredIdx.filter(qi => results[qi] && !results[qi].correct);
+  let msg;
+  if (wrongIdx.length === 0) msg = "전부 맞혔어요. 놓친 키워드가 없습니다 👍";
+  else msg = "틀린 " + wrongIdx.length + "문항의 키워드를 다시 확인하세요.";
+  $("scoreMsg").textContent = msg;
+
+  const retryWrong = $("retryWrongBtn");
+  if (wrongIdx.length > 0) {
+    retryWrong.classList.remove("hidden");
+    retryWrong.onclick = () => startRound(wrongIdx, true);
+  } else {
+    retryWrong.classList.add("hidden");
+  }
+  $("retryAllBtn").onclick = () => startRound(QUESTIONS.map((_, i) => i), false);
+
+  const list = $("reviewList");
+  list.innerHTML = "";
+  answeredIdx.forEach(qi => {
+    const Q = QUESTIONS[qi];
+    const r = results[qi];
+    const ok = r && r.correct;
+    const item = document.createElement("div");
+    item.className = "review-item";
+    item.innerHTML =
+      '<div class="ri-q">' + (qi + 1) + '. ' + Q.q +
+      '<span class="ri-tag ' + (ok ? "ok" : "no") + '">' + (ok ? "정답" : "오답") + '</span></div>' +
+      '<div class="ri-detail">정답: ' + (Q.answer + 1) + '번 · 키워드 <b>' + Q.kw + '</b></div>';
+    list.appendChild(item);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

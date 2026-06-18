@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>춘추전국 철기 보급과 사회·경제 변동 — 점검 퀴즈</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --line: #e2e0db;
+    --accent: #3a6ea5;
+    --accent-soft: #eaf1f8;
+    --correct: #2e7d56;
+    --correct-soft: #e8f5ee;
+    --wrong: #c0392b;
+    --wrong-soft: #fae9e7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .bar-track { height: 6px; background: var(--line); border-radius: 99px; margin: 18px 0 6px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 99px;
+    padding: 3px 11px;
+    margin-bottom: 12px;
+  }
+  .q-text { font-size: 1.06rem; font-weight: 600; margin-bottom: 16px; }
+  .q-num { color: var(--muted); font-weight: 700; margin-right: 6px; }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-bottom: 9px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 0.97rem;
+  }
+  .opt:hover { border-color: var(--accent); }
+  .opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.correct { border-color: var(--correct); background: var(--correct-soft); }
+  .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { border-color: var(--line); }
+  .opt.correct.disabled:hover { border-color: var(--correct); }
+  .opt.wrong.disabled:hover { border-color: var(--wrong); }
+  .opt-key {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .opt.selected .opt-key { border-color: var(--accent); color: var(--accent); }
+  .opt.correct .opt-key { border-color: var(--correct); color: #fff; background: var(--correct); }
+  .opt.wrong .opt-key { border-color: var(--wrong); color: #fff; background: var(--wrong); }
+
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 26px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 14px;
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+
+  .explain {
+    margin-top: 16px;
+    border-left: 3px solid var(--accent);
+    background: #fafbfc;
+    border-radius: 0 8px 8px 0;
+    padding: 13px 16px;
+    font-size: 0.92rem;
+    color: #3a3a3a;
+    display: none;
+  }
+  .explain.show { display: block; animation: fade 0.25s ease; }
+  .explain .verdict { font-weight: 700; margin-bottom: 5px; }
+  .explain .verdict.ok { color: var(--correct); }
+  .explain .verdict.no { color: var(--wrong); }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px);} to {opacity:1; transform:none;} }
+
+  .result { text-align: center; padding: 34px 22px; }
+  .result .score-big { font-size: 2.6rem; font-weight: 800; color: var(--accent); }
+  .result .grade { font-size: 1.15rem; font-weight: 700; margin: 6px 0 4px; }
+  .result .desc { color: var(--muted); font-size: 0.92rem; margin-bottom: 22px; }
+  .review-row {
+    display: flex; align-items: center; gap: 10px;
+    text-align: left;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+  .review-row .rn { color: var(--muted); font-weight: 700; flex: 0 0 34px; }
+  .review-row .mark { flex: 0 0 auto; }
+  .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>춘추전국시대 철기 보급과 사회·경제 변동</h1>
+    <p class="sub">점검 퀴즈 · 4지선다 10문항 · 정답 확인 시 해설 표시</p>
+    <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+    <div class="meta">
+      <span id="progress">1 / 10</span>
+      <span id="scoreLabel">정답 0</span>
+    </div>
+  </header>
+
+  <div id="quizView"></div>
+  <div id="resultView" class="hidden"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    cat: "생산력",
+    q: "철제 농기구와 결합하여 심경(깊이갈이)을 가능하게 함으로써 황허 유역 개간을 크게 확대한 농법은?",
+    opts: ["윤작법(輪作法)", "우경(牛耕)", "이앙법(移秧法)", "화전법(火田法)"],
+    ans: 1,
+    fb: "철제 쟁기를 이용한 우경(牛耕)이 이 시기에 확산되기 시작하면서 심경이 가능해져 거친 토지가 옥토로 바뀌었습니다. 다만 우경이 광범위하게 '정착'한 시점은 한대(漢代)로 보는 견해도 강하므로 '확산되기 시작했다'는 표현이 더 정확합니다."
+  },
+  {
+    cat: "생산력",
+    q: "철기 보급에 따른 농업 경영 단위의 변화로 가장 적절한 것은?",
+    opts: [
+      "개별 소농 경영 → 씨족 공동체 경작으로 통합",
+      "씨족 공동체 경작 → 개별 가족 중심 소농 경영으로 분화",
+      "노예제 대농장 → 공동 경작제로 전환",
+      "장원제 → 농노제로 재편"
+    ],
+    ans: 1,
+    fb: "잉여 생산이 늘면서 씨족 단위의 공동체 경작이 개별 가족 중심의 소농민 경영으로 분화하였고, 이는 토지 사유화 관념이 싹트는 토대가 되었습니다."
+  },
+  {
+    cat: "생산력",
+    q: "잉여 생산물 축적과 토지 사유화의 진전 속에서 새롭게 성장한 계층은?",
+    opts: ["봉건 영주", "신흥 지주", "사대부", "호족(豪族)"],
+    ans: 1,
+    fb: "경제적 실력을 갖춘 신흥 지주 계층이 등장하여 기존 혈연 중심 신분 질서를 흔들었습니다. 사대부·호족은 후대(송대·후한 말 등)에 부각되는 개념입니다."
+  },
+  {
+    cat: "상업·화폐",
+    q: "춘추전국시대에 국가별로 주조·유통된 금속 화폐를 바르게 짝지은 것은?",
+    opts: [
+      "오수전 · 반량전",
+      "명도전 · 포전",
+      "교자 · 회자",
+      "상평통보 · 당백전"
+    ],
+    ans: 1,
+    fb: "칼 모양의 명도전과 농기구 모양의 포전 등이 대표적입니다. 반량전은 진(秦) 통일 이후, 오수전은 한 무제 때, 교자·회자는 송, 상평통보·당백전은 조선의 화폐입니다."
+  },
+  {
+    cat: "상업·화폐",
+    q: "상업 발달이 가져온 사회적 변화로 옳은 것은?",
+    opts: [
+      "경제 중심이 자본·유통에서 토지로 후퇴하였다",
+      "거대 상인이 정계에 진출하는 등 사회 유동성이 높아졌다",
+      "화폐 유통이 금지되고 물물교환만 허용되었다",
+      "도시가 쇠퇴하고 자급자족 경제로 회귀하였다"
+    ],
+    ans: 1,
+    fb: "진(秦)의 재상에 오른 거대 상인 여불위(呂不韋)의 사례처럼, 상업 세력의 정계 진출은 경제 축이 토지에서 자본·유통으로 확장되고 사회 유동성이 커졌음을 보여줍니다."
+  },
+  {
+    cat: "전쟁·군사",
+    q: "철제 무기 보급과 전쟁 양상 변화에 대한 설명으로 옳지 <u>않은</u> 것은?",
+    opts: [
+      "전차 위주의 귀족 전쟁에서 보병 위주의 대규모 전쟁으로 전환되었다",
+      "쇠뇌(노)의 보급과 대규모 농민 동원이 전쟁 규모 확대에 작용하였다",
+      "철제 무기가 보급되자 청동제 무기는 즉시 완전히 사라졌다",
+      "전쟁 규모 확대가 부국강병 정책 추진의 배경이 되었다"
+    ],
+    ans: 2,
+    fb: "이 시기에도 청동제 무기는 상당 기간 함께 사용되었으므로 '즉시 완전히 사라졌다'는 서술은 틀립니다. 보병전으로의 전환은 철제 무기뿐 아니라 쇠뇌와 대규모 동원 체제가 함께 작용한 결과입니다."
+  },
+  {
+    cat: "정치·개혁",
+    q: "전국시대 각국이 추진한 부국강병 개혁을 일컫는 말과, 진(秦)에서 이를 가장 철저히 주도한 인물을 바르게 짝지은 것은?",
+    opts: [
+      "균전제 — 효문제",
+      "변법(變法) — 상앙(商鞅)",
+      "정전제 — 맹자",
+      "신법(新法) — 왕안석"
+    ],
+    ans: 1,
+    fb: "각국의 부국강병 개혁을 변법이라 하며, 진 효공 아래에서 상앙이 가장 철저하게 변법을 주도·실시하였습니다. 왕안석의 신법은 송대, 균전제는 북위 이후, 정전제는 맹자의 이상론입니다."
+  },
+  {
+    cat: "정치·제도",
+    q: "군현제(郡縣制)에 대한 설명으로 옳은 것은?",
+    opts: [
+      "제후에게 토지를 분봉하여 세습 지배를 맡기는 제도",
+      "중앙이 지방관을 파견해 지방을 직접 지배하는 제도",
+      "농민에게 토지를 균등 분배하는 토지 제도",
+      "관리를 추천으로 선발하는 인재 등용 제도"
+    ],
+    ans: 1,
+    fb: "군현제는 중앙이 직접 임명한 관리를 지방에 파견해 통치하는 제도로, 혈연·세습에 기초한 봉건제(분봉제)와 대비되며 중앙집권 체제를 강화하였습니다."
+  },
+  {
+    cat: "사상",
+    q: "춘추전국시대의 사회 변동 속에서 등장한 다양한 사상가와 학파를 통칭하는 말은?",
+    opts: ["훈고학", "성리학", "제자백가(諸子百家)", "양명학"],
+    ans: 2,
+    fb: "유가·도가·법가·묵가 등 다양한 학파가 부국강병과 사회 질서를 두고 경쟁한 현상을 제자백가라 합니다. 훈고학(한), 성리학·양명학(송·명)은 후대 사상입니다."
+  },
+  {
+    cat: "종합·평가",
+    q: "철기 문화 확산의 역사적 의의에 대한 평가로 가장 정확한 것은?",
+    opts: [
+      "철기는 농업 생산 기반 자체를 파괴하였다",
+      "철기는 생산 기반을 확장·재편하면서 혈연 중심 봉건 질서를 해체하였다",
+      "철기는 중앙집권 체제를 약화시키고 봉건 질서를 강화하였다",
+      "철기는 화폐 경제를 소멸시키고 자급 경제를 정착시켰다"
+    ],
+    ans: 1,
+    fb: "핵심 포인트입니다. 철기가 무너뜨린 것은 '생산 기반'이 아니라 혈연 중심의 봉건 질서였고, 생산 기반은 오히려 확장·재편되었습니다. 이 토대 위에서 중앙집권화와 진(秦)의 통일이 이루어졌습니다."
+  }
+];
+
+let order = QUESTIONS.map((_, i) => i); // 현재 라운드에서 풀 문제 인덱스 목록
+let pos = 0;            // order 내 현재 위치
+let selected = null;    // 현재 선택한 보기
+let confirmed = false;  // 정답 확인 여부
+let correctCount = 0;   // 맞힌 개수
+const wrongSet = new Set(); // 이번 라운드 오답 인덱스
+const answeredTotal = QUESTIONS.length;
+let isRetryRound = false;
+
+const $ = id => document.getElementById(id);
+
+function renderQuestion() {
+  const qIdx = order[pos];
+  const item = QUESTIONS[qIdx];
+  selected = null;
+  confirmed = false;
+
+  const total = order.length;
+  $('progress').textContent = `${pos + 1} / ${total}` + (isRetryRound ? " · 오답 복습" : "");
+  $('bar').style.width = `${(pos / total) * 100}%`;
+  $('scoreLabel').textContent = `정답 ${correctCount}`;
+
+  const optsHtml = item.opts.map((o, i) => `
+    <div class="opt" data-i="${i}" onclick="selectOpt(${i})">
+      <span class="opt-key">${i + 1}</span>
+      <span>${o}</span>
+    </div>`).join('');
+
+  $('quizView').innerHTML = `
+    <div class="card">
+      <span class="tag">${item.cat}</span>
+      <div class="q-text"><span class="q-num">Q${pos + 1}.</span>${item.q}</div>
+      <div id="opts">${optsHtml}</div>
+      <button class="btn" id="actionBtn" onclick="onAction()" disabled>정답 확인</button>
+      <div class="explain" id="explain"></div>
+    </div>`;
+}
+
+function selectOpt(i) {
+  if (confirmed) return;
+  selected = i;
+  document.querySelectorAll('.opt').forEach(el => {
+    el.classList.toggle('selected', Number(el.dataset.i) === i);
+  });
+  $('actionBtn').disabled = false;
+}
+
+function onAction() {
+  if (!confirmed) {
+    confirmQuestion();
+  } else {
+    nextQuestion();
+  }
+}
+
+function confirmQuestion() {
+  if (selected === null) return;
+  confirmed = true;
+  const qIdx = order[pos];
+  const item = QUESTIONS[qIdx];
+  const ok = selected === item.ans;
+
+  if (ok) correctCount++;
+  else wrongSet.add(qIdx);
+
+  document.querySelectorAll('.opt').forEach(el => {
+    const i = Number(el.dataset.i);
+    el.classList.add('disabled');
+    el.setAttribute('onclick', '');
+    if (i === item.ans) el.classList.add('correct');
+    else if (i === selected) el.classList.add('wrong');
+  });
+
+  const ex = $('explain');
+  ex.innerHTML = `
+    <div class="verdict ${ok ? 'ok' : 'no'}">${ok ? '✅ 정답입니다' : '❌ 오답입니다'}</div>
+    <div>${item.fb}</div>`;
+  ex.classList.add('show');
+
+  $('scoreLabel').textContent = `정답 ${correctCount}`;
+  $('actionBtn').textContent = (pos + 1 < order.length) ? '다음 문제' : '결과 보기';
+}
+
+function nextQuestion() {
+  pos++;
+  if (pos < order.length) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  $('bar').style.width = '100%';
+  $('quizView').classList.add('hidden');
+  $('resultView').classList.remove('hidden');
+  $('progress').textContent = `${order.length} / ${order.length}` + (isRetryRound ? " · 오답 복습" : "");
+
+  const total = order.length;
+  const pct = Math.round((correctCount / total) * 100);
+  let grade, desc;
+  if (pct >= 90) { grade = '🏆 최우수'; desc = '핵심 개념과 함정 포인트를 모두 정확히 잡았습니다.'; }
+  else if (pct >= 70) { grade = '👏 우수'; desc = '대체로 탄탄합니다. 틀린 문항만 점검하면 완벽합니다.'; }
+  else if (pct >= 50) { grade = '👍 양호'; desc = '큰 흐름은 잡았으니 오답 복습으로 빈틈을 메워보세요.'; }
+  else { grade = '📖 복습 필요'; desc = '모범답안을 다시 읽고 오답 복습으로 다져보세요.'; }
+
+  const reviewHtml = order.map(idx => {
+    const item = QUESTIONS[idx];
+    const wasWrong = wrongSet.has(idx);
+    return `
+      <div class="review-row">
+        <span class="rn">Q${idx + 1}</span>
+        <span class="mark">${wasWrong ? '❌' : '✅'}</span>
+        <span>${item.q.replace(/<[^>]+>/g, '').slice(0, 34)}…</span>
+      </div>`;
+  }).join('');
+
+  const hasWrong = wrongSet.size > 0;
+
+  $('resultView').innerHTML = `
+    <div class="card result">
+      <div class="score-big">${correctCount} / ${total}</div>
+      <div class="grade">${grade} · ${pct}점</div>
+      <div class="desc">${desc}</div>
+      <div style="text-align:left; margin-top:10px;">${reviewHtml}</div>
+      <div class="btn-row">
+        ${hasWrong ? `<button class="btn" onclick="retryWrong()">오답만 다시 풀기 (${wrongSet.size})</button>` : ''}
+        <button class="btn ghost" onclick="restartAll()">전체 다시 풀기</button>
+      </div>
+    </div>`;
+}
+
+function retryWrong() {
+  order = Array.from(wrongSet);
+  wrongSet.clear();
+  pos = 0;
+  correctCount = 0;
+  isRetryRound = true;
+  $('resultView').classList.add('hidden');
+  $('quizView').classList.remove('hidden');
+  renderQuestion();
+}
+
+function restartAll() {
+  order = QUESTIONS.map((_, i) => i);
+  wrongSet.clear();
+  pos = 0;
+  correctCount = 0;
+  isRetryRound = false;
+  $('resultView').classList.add('hidden');
+  $('quizView').classList.remove('hidden');
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

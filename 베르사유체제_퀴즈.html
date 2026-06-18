@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>베르사유 체제 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>베르사유 체제 핵심 퀴즈</h1>
+    <p>제1차 세계대전 후 베르사유 체제의 성립과 한계 — 4지선다 10문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 10 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 10</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "1918년 1월 미국 윌슨 대통령이 전후 평화 수립의 원칙으로 발표한, 비밀외교 금지·민족자결·국제기구 창설 등을 담은 것은?",
+    opts: ["대서양 헌장","14개조 평화 원칙","켈로그·브리앙 조약","로카르노 조약"],
+    ans: 1,
+    exp: "<strong>14개조 평화 원칙</strong>은 1918년 1월 윌슨이 발표한 전후 평화 구상으로, 비밀외교 금지·공해상 항해의 자유·경제적 장벽 제거·군비 축소·민족자결주의·국제기구 창설 등을 담았습니다. 제국주의에 대한 비판이자 평화 질서의 청사진이었습니다.",
+    keywords: ["윌슨","14개조","민족자결","1918"]
+  },
+  {
+    q: "윌슨의 14개조 평화 원칙에 담긴 내용으로 보기 어려운 것은?",
+    opts: ["비밀외교 금지","민족자결주의","군비 축소","식민지의 영구적 보존"],
+    ans: 3,
+    exp: "14개조는 오히려 식민지 문제를 관련 주민의 이해를 고려해 공정하게 다룰 것을 천명했습니다. <strong>식민지의 영구적 보존</strong>은 제국주의 옹호로, 14개조의 취지와 정반대입니다. 나머지는 모두 14개조의 핵심 내용입니다.",
+    keywords: ["14개조","비밀외교 금지","군비 축소","제국주의 비판"]
+  },
+  {
+    q: "1919년 1월 파리 강화 회의의 실제 성격을 가장 잘 설명한 것은?",
+    opts: [
+      "윌슨의 이상주의 원칙이 그대로 관철되었다",
+      "전승국의 현실적 이해관계와 패전국 응징이 중심이 되었다",
+      "패전국과 전승국이 대등하게 협상하였다",
+      "모든 식민지에 민족자결이 완전히 적용되었다"
+    ],
+    ans: 1,
+    exp: "파리 강화 회의에 모인 연합국 대표들은 윌슨의 이상주의를 온전히 따르지 않았습니다. 회의는 <strong>전승국의 현실적 이해관계와 패전국에 대한 철저한 응징</strong>을 중심으로 진행되었고, 이것이 베르사유 체제 불안정성의 근원이 되었습니다.",
+    keywords: ["파리강화회의","1919","전승국 이해","패전국 응징"]
+  },
+  {
+    q: "1919년 6월 독일과 체결된 베르사유 조약으로 독일이 프랑스에 반환한 지역은?",
+    opts: ["자르 분지","알자스-로렌","라인란트","단치히"],
+    ans: 1,
+    exp: "베르사유 조약으로 독일은 보불전쟁 때 획득했던 <strong>알자스-로렌</strong>을 프랑스에 반환했습니다. 라인란트는 비무장 지대로 규정되었고(이후 히틀러가 진주), 단치히는 폴란드의 바다 접근을 위한 자유시가 되었습니다.",
+    keywords: ["베르사유 조약","알자스-로렌","1919.6","독일"]
+  },
+  {
+    q: "베르사유 조약에서 독일의 모든 해외 식민지는 어떻게 처리되었는가?",
+    opts: [
+      "독일이 계속 보유하였다",
+      "즉시 독립국이 되었다",
+      "영국·프랑스·일본의 위임통치로 넘어갔다",
+      "국제연맹이 직접 통치하였다"
+    ],
+    ans: 2,
+    exp: "독일의 해외 식민지는 모두 상실되어 <strong>영국·프랑스·일본의 위임통치</strong>로 분할되었습니다. 이는 민족자결을 천명한 14개조에도 불구하고 패전국 식민지에는 독립이 적용되지 않은 대표적 사례로, 베르사유 체제의 이중성을 보여줍니다.",
+    keywords: ["해외 식민지 상실","위임통치","영프일","이중성"]
+  },
+  {
+    q: "강화 조약의 결과 오스트리아 합스부르크 제국이 해체되면서 새롭게 탄생한 국가로 옳은 것은?",
+    opts: ["핀란드","헝가리·체코슬로바키아","그리스","불가리아"],
+    ans: 1,
+    exp: "오스트리아 <strong>합스부르크 제국이 해체</strong>되면서 헝가리와 체코슬로바키아가 새로 탄생했습니다. 핀란드와 발트 3국은 러시아로부터 독립한 경우이고, 그리스·불가리아는 이전부터 존재한 국가입니다.",
+    keywords: ["합스부르크 해체","헝가리","체코슬로바키아","신생국"]
+  },
+  {
+    q: "세르비아가 주변 영토를 합쳐 형성한 신생 국가는?",
+    opts: ["체코슬로바키아","유고슬라비아","루마니아","폴란드"],
+    ans: 1,
+    exp: "<strong>유고슬라비아</strong>는 세르비아가 인근 남슬라브계 영토를 합쳐 만든 신생국입니다. 폴란드는 옛 영토를 회복해 독립했고, 체코슬로바키아는 합스부르크 제국 해체로 탄생했습니다.",
+    keywords: ["세르비아","유고슬라비아","남슬라브","신생국"]
+  },
+  {
+    q: "베르사유 체제에서 드러난 '민족자결 원칙의 이중성'을 가장 정확히 설명한 것은?",
+    opts: [
+      "모든 지역에 동일하게 적용되었다",
+      "동유럽 신생국에는 적용됐으나 패전국 식민지·비유럽 지역에는 적용되지 않았다",
+      "승전국에만 적용되었다",
+      "패전국에만 유리하게 적용되었다"
+    ],
+    ans: 1,
+    exp: "민족자결 원칙은 폴란드·체코슬로바키아 등 <strong>동유럽 신생국에는 적용</strong>되었으나, 독일 식민지는 전승국의 위임통치로 넘어가는 등 <strong>패전국과 비유럽 지역에는 적용되지 않는 이중성</strong>을 드러냈습니다. 이는 5·4 운동 등 아시아 민족운동의 배경이 되었습니다.",
+    keywords: ["민족자결","이중성","위임통치","동유럽"]
+  },
+  {
+    q: "1920년 창설된 국제연맹의 한계로 옳지 않은 것은?",
+    opts: [
+      "제창국인 미국이 불참하였다",
+      "독일과 소련이 배제되었다",
+      "군사적 제재 수단이 미비하였다",
+      "본부를 두지 못해 회의 자체가 불가능하였다"
+    ],
+    ans: 3,
+    exp: "국제연맹(1920)은 제네바에 본부를 두고 정상 운영되었으므로 <strong>‘회의 자체가 불가능’은 사실이 아닙니다</strong>. 실제 한계는 제창국 미국의 불참, 독일·소련의 배제, 군사적 제재 수단의 미비로, 만주사변·에티오피아 침공 때 실효성 부족이 드러났습니다.",
+    keywords: ["국제연맹","1920","미국 불참","제재 미비"]
+  },
+  {
+    q: "베르사유 체제가 제2차 세계대전의 배경으로 작용한 경로를 가장 적절하게 설명한 것은?",
+    opts: [
+      "가혹한 배상금에 대공황이 겹쳐 바이마르 공화국이 흔들리며 나치즘이 부상하고, 다수 신생국이 분쟁의 불씨가 되었다",
+      "국제연맹의 강력한 제재로 독일이 즉시 붕괴하였다",
+      "민족자결이 완전히 실현되어 항구적 평화가 정착되었다",
+      "미국 주도의 안정적 국제 질서가 확립되었다"
+    ],
+    ans: 0,
+    exp: "독일에 가해진 <strong>가혹한 배상금에 대공황(1929)이 겹치며 바이마르 공화국이 동요</strong>하였고, 이는 나치즘 부상의 토양이 되었습니다. 또한 다수 신생국의 탄생은 새로운 영토·민족 분쟁의 불씨를 남겨 제2차 세계대전으로 이어지는 배경이 되었습니다.",
+    keywords: ["배상금","대공황","나치즘","제2차 세계대전"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>

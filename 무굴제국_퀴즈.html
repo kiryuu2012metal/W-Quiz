@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무굴 제국 문화 퀴즈</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#f5f4f0;color:#1a1a18;line-height:1.7}
+  .container{max-width:720px;margin:0 auto;padding:2rem 1.2rem 4rem}
+  h1{font-size:1.4rem;font-weight:600;color:#1a1a18;margin-bottom:0.3rem}
+  .subtitle{font-size:0.85rem;color:#7a7870;margin-bottom:2rem}
+  .progress-bar{background:#e0ddd6;border-radius:8px;height:6px;margin-bottom:2rem;overflow:hidden}
+  .progress-fill{height:100%;background:#3B6D11;border-radius:8px;transition:width 0.4s}
+  .progress-text{font-size:0.8rem;color:#7a7870;margin-bottom:0.5rem}
+  .q-card{background:#fff;border-radius:14px;border:1px solid #e0ddd6;padding:1.6rem 1.4rem;margin-bottom:1.5rem}
+  .q-number{font-size:0.75rem;font-weight:600;color:#639922;letter-spacing:0.05em;margin-bottom:0.6rem}
+  .q-text{font-size:1rem;font-weight:500;color:#1a1a18;margin-bottom:1.2rem;line-height:1.6}
+  .options{display:flex;flex-direction:column;gap:0.5rem}
+  .option{display:flex;align-items:flex-start;gap:0.7rem;padding:0.75rem 1rem;border-radius:10px;border:1.5px solid #e0ddd6;cursor:pointer;transition:all 0.15s;font-size:0.95rem;background:#fff;text-align:left}
+  .option:hover:not(.disabled){border-color:#639922;background:#f5faee}
+  .option.selected{border-color:#378ADD;background:#eef6fd}
+  .option.correct{border-color:#3B6D11;background:#eaf3de;color:#27500A}
+  .option.wrong{border-color:#D85A30;background:#faece7;color:#4A1B0C}
+  .option.disabled{cursor:default}
+  .option-label{width:22px;height:22px;border-radius:50%;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;flex-shrink:0;margin-top:1px}
+  .option.correct .option-label{background:#3B6D11;border-color:#3B6D11;color:#fff}
+  .option.wrong .option-label{background:#D85A30;border-color:#D85A30;color:#fff}
+  .check-btn{display:block;width:100%;padding:0.8rem;border-radius:10px;border:none;background:#3B6D11;color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:1rem;transition:background 0.15s}
+  .check-btn:hover{background:#27500A}
+  .check-btn:disabled{background:#b4b2a9;cursor:default}
+  .explanation{margin-top:1rem;padding:1rem 1.1rem;background:#f5faee;border-radius:10px;border-left:4px solid #3B6D11;font-size:0.88rem;color:#27500A;line-height:1.65;display:none}
+  .explanation.show{display:block}
+  .explanation strong{color:#1a1a18}
+  .wrong-explanation{background:#faece7;border-left-color:#D85A30;color:#4A1B0C}
+  .result-card{background:#fff;border-radius:14px;border:1px solid #e0ddd6;padding:2rem;text-align:center;display:none}
+  .result-card.show{display:block}
+  .result-score{font-size:3rem;font-weight:700;color:#3B6D11;margin:0.5rem 0}
+  .result-label{font-size:1rem;color:#555;margin-bottom:1.5rem}
+  .result-grade{display:inline-block;padding:4px 16px;border-radius:20px;font-size:0.85rem;font-weight:600;background:#eaf3de;color:#27500A;margin-bottom:1.5rem}
+  .retry-btn{padding:0.75rem 2rem;border-radius:10px;border:none;background:#378ADD;color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;margin:0.4rem}
+  .retry-btn:hover{background:#185FA5}
+  .retry-btn.secondary{background:#fff;border:1.5px solid #378ADD;color:#185FA5}
+  .retry-btn.secondary:hover{background:#eef6fd}
+  .section-title{font-size:1.1rem;font-weight:600;color:#1a1a18;margin:2rem 0 1rem;padding-bottom:0.4rem;border-bottom:2px solid #3B6D11}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:600;margin-right:6px;vertical-align:middle}
+  .tag-rel{background:#E6F1FB;color:#185FA5}
+  .tag-bld{background:#EAF3DE;color:#3B6D11}
+  .tag-art{background:#FAEEDA;color:#854F0B}
+  .tag-imp{background:#F4C0D1;color:#72243E}
+  .hidden{display:none}
+  .next-btn{display:inline-block;padding:0.6rem 1.4rem;border-radius:10px;border:1.5px solid #3B6D11;background:#fff;color:#3B6D11;font-size:0.9rem;font-weight:600;cursor:pointer;margin-top:0.8rem;transition:all 0.15s}
+  .next-btn:hover{background:#eaf3de}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>무굴 제국 문화 퀴즈</h1>
+  <p class="subtitle">최종 모범 답안 기반 · 4지선다 · 총 10문항</p>
+
+  <div id="quiz-section">
+    <p class="progress-text" id="progress-text">문제 1 / 10</p>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+    <div id="quiz-area"></div>
+  </div>
+
+  <div class="result-card" id="result-card">
+    <div style="font-size:2.5rem;margin-bottom:0.5rem">🏛️</div>
+    <div class="result-score" id="result-score">0 / 10</div>
+    <div class="result-label">정답률: <span id="result-pct">0%</span></div>
+    <div class="result-grade" id="result-grade"></div>
+    <div style="font-size:0.9rem;color:#555;margin-bottom:1.5rem" id="result-msg"></div>
+    <button class="retry-btn" onclick="retryWrong()" id="retry-wrong-btn">오답만 다시 풀기</button>
+    <button class="retry-btn secondary" onclick="restartAll()">처음부터 다시 풀기</button>
+  </div>
+</div>
+
+<script>
+const allQuestions = [
+  {
+    id:1, category:"종교", tag:"tag-rel",
+    q:"아크바르 황제의 종교 정책으로 옳은 것은?",
+    opts:["힌두교 사원을 파괴하고 이슬람 제일주의를 내세웠다.","지즈야(인두세)를 폐지하고 힌두교도를 관료로 등용하였다.","시크교를 국교로 선포하였다.","불교를 장려하여 석굴 사원을 건립하였다."],
+    ans:1,
+    exp:"아크바르는 힌두교도에 대한 지즈야(인두세)를 폐지하고 힌두 세력을 관료로 등용하는 <strong>종교적 관용 정책</strong>을 시행하였다. 또한 여러 종교의 공통 요소를 결합한 <strong>딘 일라히</strong>를 제창하여 종교적 통합을 추구하였다."
+  },
+  {
+    id:2, category:"종교", tag:"tag-rel",
+    q:"아크바르가 제창한 '딘 일라히'에 대한 설명으로 옳은 것은?",
+    opts:["이슬람교만을 인정하는 배타적 교리","힌두교와 이슬람교의 반목을 심화시킨 운동","여러 종교의 공통 요소를 결합하여 종교적 통합을 추구한 것","시크교의 다른 이름"],
+    ans:2,
+    exp:"<strong>딘 일라히</strong>는 아크바르가 제창한 것으로, 이슬람교·힌두교·조로아스터교 등 여러 종교의 공통 요소를 결합하여 종교적 통합을 추구하였다. 다양한 민족과 종교가 공존하는 제국 통치의 기반을 마련하려는 시도였다."
+  },
+  {
+    id:3, category:"종교", tag:"tag-rel",
+    q:"아우랑제브 황제의 강경 정책으로 인해 발생한 결과가 아닌 것은?",
+    opts:["지즈야(인두세) 부활","힌두 사원 파괴","시크교도와 마라타 동맹의 반란","딘 일라히 제창으로 종교 통합 달성"],
+    ans:3,
+    exp:"<strong>딘 일라히</strong>는 아우랑제브가 아닌 <strong>아크바르</strong>가 제창한 것이다. 아우랑제브는 이슬람 제일주의를 내세워 지즈야를 부활하고 힌두 사원을 파괴하였으며, 이로 인해 시크교도와 마라타 동맹의 반란이 촉발되어 무굴 제국 쇠퇴의 원인이 되었다."
+  },
+  {
+    id:4, category:"건축", tag:"tag-bld",
+    q:"타지마할에 대한 설명으로 옳은 것은?",
+    opts:["아크바르가 자신의 무덤으로 건립하였다.","샤 자한이 황후 뭄타즈 마할을 기리기 위해 건립한 영묘이다.","붉은 사암만을 사용하여 건축한 이슬람 사원이다.","델리 술탄 왕조 시대에 건립된 건축물이다."],
+    ans:1,
+    exp:"<strong>타지마할</strong>은 무굴 제국의 황제 <strong>샤 자한</strong>이 사랑하는 황후 <strong>뭄타즈 마할</strong>의 죽음을 애도하며 건립한 영묘(무덤)이다. 흰 대리석 돔과 붉은 사암 기단, 이슬람식 첨탑, 힌두식 연꽃 문양이 결합된 무굴 건축의 최고 걸작으로 평가된다."
+  },
+  {
+    id:5, category:"건축", tag:"tag-bld",
+    q:"무굴 건축 양식의 특징으로 옳은 것은?",
+    opts:["순수한 이슬람 양식만을 고수하였다.","인도 전통 양식을 배척하고 페르시아 양식만 수용하였다.","흰 대리석 돔과 붉은 사암 기단, 이슬람식 첨탑에 힌두식 연꽃 문양을 결합하였다.","불교 스투파(탑) 양식을 중심으로 발전하였다."],
+    ans:2,
+    exp:"무굴 양식은 <strong>이슬람 건축과 인도 힌두 전통 양식이 융합</strong>된 것이 특징이다. 구체적으로 흰 대리석 돔, 붉은 사암 기단, 이슬람식 첨탑(미나레트)에 힌두식 연꽃 문양을 함께 사용하여 독창적인 건축 양식을 완성하였다."
+  },
+  {
+    id:6, category:"건축", tag:"tag-bld",
+    q:"다음 중 무굴 제국 시기에 건립된 건축물이 아닌 것은?",
+    opts:["타지마할","델리의 붉은 성(레드 포트)","자마 마스지드","쿠트브 미나르"],
+    ans:3,
+    exp:"<strong>쿠트브 미나르</strong>는 델리 술탄 왕조 시대에 아이바크가 이슬람 세력의 승리를 기념하여 건립한 것이다. 타지마할, 델리의 붉은 성, 자마 마스지드는 모두 무굴 제국 시기에 건립된 대표 건축물이다."
+  },
+  {
+    id:7, category:"예술", tag:"tag-art",
+    q:"무굴 회화(세밀화)의 특징으로 옳은 것은?",
+    opts:["중국 산수화의 영향을 받아 자연을 추상적으로 묘사하였다.","페르시아 화풍과 인도 양식이 융합되어 인물과 자연을 사실적으로 묘사하였다.","불교적 주제만을 다루는 종교화 중심으로 발전하였다.","유럽 르네상스 양식의 직접적 영향을 받아 성립하였다."],
+    ans:1,
+    exp:"무굴 회화는 <strong>페르시아 세밀화 화풍</strong>과 <strong>인도 양식</strong>이 융합된 것이 특징이다. 궁정 회화를 중심으로 인물과 자연을 사실적으로 묘사하는 세밀화가 발달하였으며, 무굴 제국의 독창적인 예술 양식으로 자리잡았다."
+  },
+  {
+    id:8, category:"예술", tag:"tag-art",
+    q:"무굴 제국 시기 언어에 대한 설명으로 옳은 것은?",
+    opts:["산스크리트어가 공식 문서와 일상 언어로 모두 사용되었다.","페르시아어는 일상 언어, 우르두어는 공식 외교 언어로 사용되었다.","페르시아어는 공식 문서·외교 언어로, 우르두어는 일상 언어로 발전하였다.","힌두어만을 공용어로 지정하여 통일을 추구하였다."],
+    ans:2,
+    exp:"무굴 제국에서는 <strong>페르시아어</strong>가 공식 문서와 외교 언어로 사용되었고, <strong>우르두어</strong>(힌두어+페르시아어+아랍어 결합)는 일상 언어로 널리 발전하였다. 이 둘의 역할을 혼동하지 않도록 주의해야 한다."
+  },
+  {
+    id:9, category:"영향", tag:"tag-imp",
+    q:"무굴 문화가 인도 사회에 미친 영향으로 옳지 않은 것은?",
+    opts:["힌두 문화와 이슬람 문화의 융합 전통을 남겼다.","오늘날 인도의 언어·음식·예술·건축에 큰 영향을 끼쳤다.","타지마할은 세계 문화유산으로 인도 문화의 상징이 되었다.","무굴 문화의 영향으로 인도에서 힌두교가 완전히 소멸하였다."],
+    ans:3,
+    exp:"무굴 제국의 문화 정책은 이슬람 문화와 힌두 문화의 <strong>융합</strong>을 추구한 것이지, 힌두교를 소멸시킨 것이 아니다. 오늘날까지 인도는 힌두교 중심 사회이며, 무굴 문화의 유산은 언어·음식·예술·건축 등 다양한 분야에 공존하는 형태로 남아 있다."
+  },
+  {
+    id:10, category:"영향", tag:"tag-imp",
+    q:"무굴 제국의 건국자와 성립 배경으로 옳은 것은?",
+    opts:["아소카왕이 불교를 바탕으로 인도를 통일하여 건국하였다.","티무르의 후손 바부르가 델리 술탄 왕조를 무너뜨리고 건국하였다.","나나크가 시크교를 창시하며 세운 종교 국가이다.","아이바크가 델리를 정복한 후 수립한 이슬람 왕조의 연장이다."],
+    ans:1,
+    exp:"무굴 제국(1526~1858)은 <strong>티무르의 후손으로 알려진 바부르</strong>가 파니파트 전투에서 델리 술탄 왕조(로디 왕조)를 무너뜨리고 건국한 이슬람 왕조이다. 쿠트브 미나르를 건립한 아이바크는 델리 술탄 왕조의 창시자로, 무굴 제국과는 별개이다."
+  }
+];
+
+let currentQuestions = [...allQuestions];
+let currentIdx = 0;
+let score = 0;
+let wrongIds = [];
+let answered = false;
+let isRetryMode = false;
+
+const labels = ['①','②','③','④'];
+
+function renderQuestion() {
+  const q = currentQuestions[currentIdx];
+  const total = currentQuestions.length;
+  document.getElementById('progress-text').textContent = `문제 ${currentIdx+1} / ${total}`;
+  document.getElementById('progress-fill').style.width = `${((currentIdx+1)/total)*100}%`;
+
+  const html = `
+    <div class="q-card" id="q-card">
+      <div class="q-number"><span class="tag ${q.tag}">${q.category}</span> Q${currentIdx+1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="options">
+        ${q.opts.map((o,i)=>`
+          <button class="option" id="opt-${i}" onclick="selectOption(${i})">
+            <span class="option-label">${labels[i]}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <button class="check-btn" id="check-btn" disabled onclick="checkAnswer()">정답 확인</button>
+      <div class="explanation" id="explanation"></div>
+      <div style="text-align:right;display:none" id="next-area">
+        <button class="next-btn" onclick="nextQuestion()">${currentIdx+1 < currentQuestions.length ? '다음 문제 →' : '결과 보기 →'}</button>
+      </div>
+    </div>`;
+  document.getElementById('quiz-area').innerHTML = html;
+  answered = false;
+}
+
+let selectedOpt = null;
+
+function selectOption(i) {
+  if (answered) return;
+  selectedOpt = i;
+  document.querySelectorAll('.option').forEach((el,idx)=>{
+    el.classList.toggle('selected', idx===i);
+  });
+  document.getElementById('check-btn').disabled = false;
+}
+
+function checkAnswer() {
+  if (answered) return;
+  answered = true;
+  const q = currentQuestions[currentIdx];
+  const correct = q.ans;
+  document.querySelectorAll('.option').forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===correct) el.classList.add('correct');
+    else if(i===selectedOpt && selectedOpt!==correct) el.classList.add('wrong');
+  });
+  const expEl = document.getElementById('explanation');
+  expEl.innerHTML = (selectedOpt===correct ? '✅ 정답입니다! ' : '❌ 오답입니다. ') + q.exp;
+  expEl.classList.add('show');
+  if(selectedOpt===correct) score++;
+  else if(!isRetryMode && !wrongIds.includes(q.id)) wrongIds.push(q.id);
+  document.getElementById('check-btn').disabled = true;
+  document.getElementById('check-btn').style.display='none';
+  document.getElementById('next-area').style.display='block';
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if(currentIdx >= currentQuestions.length) showResult();
+  else renderQuestion();
+}
+
+function showResult() {
+  document.getElementById('quiz-section').style.display='none';
+  const card = document.getElementById('result-card');
+  card.classList.add('show');
+  const pct = Math.round((score/currentQuestions.length)*100);
+  document.getElementById('result-score').textContent = `${score} / ${currentQuestions.length}`;
+  document.getElementById('result-pct').textContent = `${pct}%`;
+  let grade, msg;
+  if(pct>=90){grade='최우수 🏆';msg='무굴 제국 문화를 완벽히 이해하고 있습니다!';}
+  else if(pct>=70){grade='우수 👍';msg='핵심 내용을 잘 파악하고 있습니다. 오답을 복습해보세요.';}
+  else if(pct>=50){grade='보통 📚';msg='주요 키워드와 인물을 중심으로 다시 복습하세요.';}
+  else{grade='복습 필요 📖';msg='모범 답안의 필수 키워드부터 다시 정리해보세요.';}
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('result-msg').textContent = msg;
+  if(wrongIds.length===0) document.getElementById('retry-wrong-btn').style.display='none';
+}
+
+function retryWrong() {
+  if(wrongIds.length===0) return;
+  isRetryMode = true;
+  currentQuestions = allQuestions.filter(q=>wrongIds.includes(q.id));
+  wrongIds = [];
+  currentIdx = 0;
+  score = 0;
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('quiz-section').style.display='block';
+  renderQuestion();
+}
+
+function restartAll() {
+  isRetryMode = false;
+  currentQuestions = [...allQuestions];
+  wrongIds = [];
+  currentIdx = 0;
+  score = 0;
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('quiz-section').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프랑스 대혁명 — 점검 퀴즈</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --line: #e2e0db;
+    --accent: #3a6ea5;
+    --accent-soft: #eaf1f8;
+    --correct: #2e7d56;
+    --correct-soft: #e8f5ee;
+    --wrong: #c0392b;
+    --wrong-soft: #fae9e7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .bar-track { height: 6px; background: var(--line); border-radius: 99px; margin: 18px 0 6px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+  }
+  .q-text { font-size: 1.08rem; font-weight: 600; margin-bottom: 18px; }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #fff;
+  }
+  .opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.correct { border-color: var(--correct); background: var(--correct-soft); }
+  .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { background: #fff; border-color: var(--line); }
+  .opt.disabled.correct:hover { background: var(--correct-soft); border-color: var(--correct); }
+  .opt.disabled.wrong:hover { background: var(--wrong-soft); border-color: var(--wrong); }
+  .opt-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 0.8rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .opt.selected .opt-num { background: var(--accent); color: #fff; }
+  .opt.correct .opt-num { background: var(--correct); color: #fff; }
+  .opt.wrong .opt-num { background: var(--wrong); color: #fff; }
+
+  .explain {
+    margin-top: 16px;
+    border-left: 3px solid var(--accent);
+    background: #fafafa;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 0.93rem;
+  }
+  .explain .verdict { font-weight: 700; margin-bottom: 6px; }
+  .explain .verdict.ok { color: var(--correct); }
+  .explain .verdict.no { color: var(--wrong); }
+  .explain .kw {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+    font-size: 0.88rem;
+  }
+  .explain .kw b { color: var(--accent); }
+
+  .btns { display: flex; gap: 10px; margin-top: 20px; }
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+  .btn-ghost { background: var(--line); color: var(--ink); }
+  button:hover:not(:disabled) { opacity: 0.88; }
+
+  /* result */
+  .result-head { text-align: center; padding: 8px 0 4px; }
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--accent); }
+  .score-sub { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+  .score-msg { margin-top: 12px; font-size: 0.95rem; }
+  .review-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-top: 10px;
+    background: #fff;
+  }
+  .ri-q { font-size: 0.92rem; font-weight: 600; }
+  .ri-tag {
+    float: right;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 99px;
+    margin-left: 8px;
+  }
+  .ri-tag.ok { color: var(--correct); background: var(--correct-soft); }
+  .ri-tag.no { color: var(--wrong); background: var(--wrong-soft); }
+  .ri-detail { font-size: 0.83rem; color: var(--muted); margin-top: 6px; }
+  .ri-detail b { color: var(--ink); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>프랑스 대혁명 — 점검 퀴즈</h1>
+    <div class="sub">모범답안 기반 15문항 · 정답 확인 시 해설·필수 키워드 표시</div>
+  </header>
+
+  <!-- QUIZ VIEW -->
+  <div id="quizView">
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="meta">
+      <span id="progressLabel">1 / 15</span>
+      <span id="roundLabel"></span>
+    </div>
+
+    <div class="card">
+      <span class="tag" id="qTag"></span>
+      <div class="q-text" id="qText"></div>
+      <div id="optList"></div>
+      <div id="explainBox"></div>
+      <div class="btns">
+        <button class="btn-primary" id="actionBtn">정답 확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT VIEW -->
+  <div id="resultView" class="hidden">
+    <div class="card">
+      <div class="result-head">
+        <div class="score-big" id="scoreBig">0 / 15</div>
+        <div class="score-sub" id="scoreSub"></div>
+        <div class="score-msg" id="scoreMsg"></div>
+      </div>
+      <div class="btns">
+        <button class="btn-primary" id="retryWrongBtn">오답만 다시 풀기</button>
+        <button class="btn-ghost" id="retryAllBtn">전체 다시 풀기</button>
+      </div>
+    </div>
+    <div id="reviewList"></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    tag: "배경 (구체제)",
+    q: "프랑스 혁명 전 '앙시앵 레짐(구체제)'의 신분 구조에 대한 설명으로 옳은 것은?",
+    options: [
+      "제1신분 성직자와 제2신분 귀족이 면세 특권을 누리고, 제3신분 시민·농민이 세금과 의무를 부담했다",
+      "제1신분 농민이 면세 특권을 누렸다",
+      "모든 신분이 동등하게 세금을 부담했다",
+      "제3신분인 귀족이 면세 특권을 독점했다"
+    ],
+    answer: 0,
+    exp: "제1신분(성직자)과 제2신분(귀족)은 면세 특권을 누린 반면, 제3신분(시민·농민)이 대부분의 세금과 사회적 의무를 부담하는 모순된 구조였다.",
+    kw: "앙시앵 레짐 · 삼신분제 · 성직자·귀족 면세 특권 · 제3신분 세금 부담"
+  },
+  {
+    tag: "배경 (재정)",
+    q: "혁명 직전 프랑스 국가 재정을 악화시킨 직접적 원인으로 옳은 것은?",
+    options: [
+      "미국 독립 전쟁 지원",
+      "백년전쟁 패배",
+      "나폴레옹 전쟁 비용",
+      "십자군 원정 부담"
+    ],
+    answer: 0,
+    exp: "프랑스는 미국 독립 전쟁을 지원하면서 국가 재정이 크게 악화되었고, 이것이 삼부회 소집으로 이어지는 재정 위기의 배경이 되었다.",
+    kw: "미국 독립 전쟁 지원 · 국가 재정 악화"
+  },
+  {
+    tag: "배경 (사상)",
+    q: "절대왕정과 신분제 비판의 사상적 토대가 된 계몽사상가와 개념으로 옳은 것은?",
+    options: [
+      "루소의 사회계약론과 인민주권 사상",
+      "애덤 스미스의 자유방임주의",
+      "마키아벨리의 군주론",
+      "다윈의 진화론"
+    ],
+    answer: 0,
+    exp: "루소의 사회계약론과 인민주권 사상 등 계몽주의가 확산되면서 절대왕정과 신분제에 대한 비판이 커졌다.",
+    kw: "계몽사상 · 루소 사회계약론 · 인민주권"
+  },
+  {
+    tag: "전개 1",
+    q: "루이 16세가 재정 위기를 해결하기 위해 소집한 신분제 회의는?",
+    options: [
+      "삼부회",
+      "국민공회",
+      "총재정부",
+      "빈 회의"
+    ],
+    answer: 0,
+    exp: "루이 16세는 재정 위기를 해결하기 위해 삼부회를 소집하였으나, 표결 방식을 둘러싼 갈등이 발생했다.",
+    kw: "루이 16세 · 삼부회 소집 · 표결 방식 갈등"
+  },
+  {
+    tag: "전개 1",
+    q: "삼부회 갈등 속에서 제3신분이 결성하고, 헌법 제정을 선언한 사건의 연결로 옳은 것은?",
+    options: [
+      "국민의회 결성 → 테니스코트의 맹세(헌법 제정 선언)",
+      "국민공회 결성 → 브뤼메르 쿠데타",
+      "총재정부 수립 → 테르미도르 반동",
+      "입법의회 결성 → 빈 회의"
+    ],
+    answer: 0,
+    exp: "제3신분은 국민의회를 결성하고 테니스코트의 맹세를 통해 헌법 제정을 선언하였다.",
+    kw: "국민의회 · 테니스코트의 맹세 · 헌법 제정 선언"
+  },
+  {
+    tag: "전개 1",
+    q: "혁명의 시작을 알린 1789년의 상징적 사건은?",
+    options: [
+      "파리 시민의 바스티유 감옥 습격",
+      "베르사유 궁전 점거",
+      "테르미도르 반동",
+      "브뤼메르 쿠데타"
+    ],
+    answer: 0,
+    exp: "파리 시민들은 1789년 바스티유 감옥을 습격하여 혁명의 시작을 알렸다.",
+    kw: "바스티유 감옥 습격 (1789) · 혁명의 시작"
+  },
+  {
+    tag: "전개 1",
+    q: "바스티유 습격 이후 국민의회가 취한 조치로 옳은 것은?",
+    options: [
+      "봉건제를 폐지하고 「인간과 시민의 권리 선언」을 발표했다",
+      "나폴레옹을 황제로 추대했다",
+      "빈 체제를 수립했다",
+      "절대왕정을 강화했다"
+    ],
+    answer: 0,
+    exp: "국민의회는 봉건제를 폐지하고 「인간과 시민의 권리 선언(인권선언)」을 발표하여 자유·평등·국민주권의 원칙을 천명하였다.",
+    kw: "봉건제 폐지 · 인권선언 발표 · 자유·평등·국민주권"
+  },
+  {
+    tag: "전개 2",
+    q: "혁명이 급진화되면서 나타난 정치 체제의 변화로 옳은 것은?",
+    options: [
+      "입헌군주정 단계에서 공화정 단계로 급진화되고 루이 16세가 처형되었다",
+      "공화정에서 입헌군주정으로 후퇴했다",
+      "절대왕정이 그대로 유지되었다",
+      "곧바로 나폴레옹 제정이 수립되었다"
+    ],
+    answer: 0,
+    exp: "혁명은 입헌군주정 단계에서 공화정 단계로 급진화되었고, 루이 16세가 처형되었다.",
+    kw: "입헌군주정 → 공화정 급진화 · 루이 16세 처형"
+  },
+  {
+    tag: "전개 2",
+    q: "공화정 시기 공포정치를 실시한 정파와 인물의 연결로 옳은 것은?",
+    options: [
+      "자코뱅파 — 로베스피에르",
+      "지롱드파 — 당통",
+      "왕당파 — 라파예트",
+      "총재정부 — 시에예스"
+    ],
+    answer: 0,
+    exp: "자코뱅파의 로베스피에르는 공포정치를 실시하였다.",
+    kw: "자코뱅파 · 로베스피에르 · 공포정치"
+  },
+  {
+    tag: "전개 2",
+    q: "로베스피에르의 공포정치에 대한 반발로 일어난 정변은?",
+    options: [
+      "테르미도르 반동",
+      "브뤼메르 쿠데타",
+      "7월 혁명",
+      "바스티유 습격"
+    ],
+    answer: 0,
+    exp: "공포정치에 대한 반발로 테르미도르 반동이 일어났다. 이후 정치적 혼란이 이어졌다.",
+    kw: "테르미도르 반동 · 공포정치에 대한 반발"
+  },
+  {
+    tag: "전개 2",
+    q: "테르미도르 반동 이후 정치적 혼란 속에서 나폴레옹이 권력을 장악한 사건은?",
+    options: [
+      "브뤼메르 쿠데타",
+      "테니스코트의 맹세",
+      "삼부회 소집",
+      "워털루 전투"
+    ],
+    answer: 0,
+    exp: "정치적 혼란 속에서 나폴레옹이 브뤼메르 쿠데타를 통해 권력을 장악하였다.",
+    kw: "브뤼메르 쿠데타 · 나폴레옹 권력 장악"
+  },
+  {
+    tag: "전개 2",
+    q: "나폴레옹이 혁명 이념을 제도화하여 '근대 민법의 원형'을 확립한 것은?",
+    options: [
+      "나폴레옹 법전",
+      "인권선언",
+      "대헌장(마그나카르타)",
+      "권리장전"
+    ],
+    answer: 0,
+    exp: "나폴레옹은 혁명 이념을 나폴레옹 법전으로 제도화하여 근대 민법의 원형을 확립하고, 이를 유럽 각지에 전파하였다. (혁명 이념의 전파자이자 독재자라는 이중성)",
+    kw: "나폴레옹 법전 · 근대 민법의 원형 · 유럽 전파 · (이중성)"
+  },
+  {
+    tag: "인권선언 (함정)",
+    q: "프랑스 인권선언에 규정된 내용으로 보기 어려운 것은?",
+    options: [
+      "저항권",
+      "자유와 평등",
+      "국민주권 · 법 앞의 평등",
+      "사유재산권"
+    ],
+    answer: 0,
+    exp: "인권선언은 자유·평등, 국민주권, 법 앞의 평등, 사유재산권을 규정했다. '저항권'은 로크·미국 독립선언의 개념으로, 프랑스 인권선언에는 포함되지 않는 함정이다.",
+    kw: "자유·평등·국민주권·법 앞의 평등·사유재산권 / (저항권 ❌)"
+  },
+  {
+    tag: "역사적 의의",
+    q: "프랑스 인권선언이 미국 독립선언과 함께 사상적 기반을 이룬 흐름을 가리키는 표현은?",
+    options: [
+      "대서양 혁명",
+      "산업 혁명",
+      "종교 개혁",
+      "명예 혁명"
+    ],
+    answer: 0,
+    exp: "인권선언은 봉건적 신분질서를 부정하고 근대 시민사회의 원리를 제시했으며, 미국 독립선언과 함께 대서양 혁명의 사상적 기반을 이루었다.",
+    kw: "대서양 혁명 · 미국 독립선언과 함께 사상적 기반 · 근대 시민사회 원리"
+  },
+  {
+    tag: "역사적 의의 (함정)",
+    q: "메테르니히 주도로 수립된 빈 체제의 성격과 그 결과로 옳은 것은?",
+    options: [
+      "복고·보수 체제로 혁명 이념을 억압했으나, 오히려 자유주의·민족주의를 자극해 1848년 혁명으로 이어졌다",
+      "팽창주의 체제로 혁명 이념을 전 세계에 전파했다",
+      "공화정을 수립해 국민주권을 실현했다",
+      "봉건제를 폐지하고 신분제를 철폐했다"
+    ],
+    answer: 0,
+    exp: "빈 체제는 혁명 이념을 억압하고 구체제를 복원하려 한 복고·보수 체제다('팽창주의'는 함정). 그러나 오히려 유럽 각지의 자유주의·민족주의 운동을 자극하여 1848년 혁명으로 이어졌다.",
+    kw: "빈 체제(복고·보수) · 혁명 이념 억압 · 자유주의·민족주의 자극 · 1848년 혁명"
+  }
+];
+
+const $ = (id) => document.getElementById(id);
+let order = QUESTIONS.map((_, i) => i);
+let pos = 0;
+let confirmed = false;
+let results = {};
+let isRetryRound = false;
+
+function startRound(indices, retry) {
+  order = indices.slice();
+  pos = 0;
+  confirmed = false;
+  isRetryRound = retry;
+  if (!retry) results = {};
+  $("resultView").classList.add("hidden");
+  $("quizView").classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  confirmed = false;
+  const qi = order[pos];
+  const Q = QUESTIONS[qi];
+
+  $("barFill").style.width = ((pos) / order.length * 100) + "%";
+  $("progressLabel").textContent = (pos + 1) + " / " + order.length;
+  $("roundLabel").textContent = isRetryRound ? "오답 복습 라운드" : "";
+
+  $("qTag").textContent = Q.tag;
+  $("qText").textContent = (qi + 1) + ". " + Q.q;
+
+  const list = $("optList");
+  list.innerHTML = "";
+  Q.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.dataset.idx = i;
+    div.innerHTML = '<span class="opt-num">' + (i + 1) + '</span><span>' + opt + '</span>';
+    div.onclick = () => selectOption(div, i);
+    list.appendChild(div);
+  });
+
+  $("explainBox").innerHTML = "";
+  const btn = $("actionBtn");
+  btn.textContent = "정답 확인";
+  btn.disabled = true;
+}
+
+let picked = null;
+function selectOption(div, i) {
+  if (confirmed) return;
+  picked = i;
+  document.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
+  div.classList.add("selected");
+  $("actionBtn").disabled = false;
+}
+
+function confirmAnswer() {
+  const qi = order[pos];
+  const Q = QUESTIONS[qi];
+  confirmed = true;
+  const correct = picked === Q.answer;
+  results[qi] = { correct, picked };
+
+  document.querySelectorAll(".opt").forEach((o) => {
+    const idx = parseInt(o.dataset.idx);
+    o.classList.add("disabled");
+    o.classList.remove("selected");
+    if (idx === Q.answer) o.classList.add("correct");
+    else if (idx === picked) o.classList.add("wrong");
+  });
+
+  const exp = $("explainBox");
+  exp.innerHTML =
+    '<div class="explain">' +
+      '<div class="verdict ' + (correct ? "ok" : "no") + '">' +
+        (correct ? "✅ 정답입니다" : "❌ 오답입니다 (정답: " + (Q.answer + 1) + "번)") +
+      '</div>' +
+      '<div>' + Q.exp + '</div>' +
+      '<div class="kw">📌 답안 필수 키워드 — <b>' + Q.kw + '</b></div>' +
+    '</div>';
+
+  const btn = $("actionBtn");
+  btn.disabled = false;
+  btn.textContent = (pos === order.length - 1) ? "결과 보기" : "다음 문제";
+}
+
+$("actionBtn").addEventListener("click", () => {
+  if (!confirmed) {
+    confirmAnswer();
+  } else {
+    picked = null;
+    if (pos === order.length - 1) {
+      showResult();
+    } else {
+      pos++;
+      renderQuestion();
+    }
+  }
+});
+
+function showResult() {
+  $("quizView").classList.add("hidden");
+  $("resultView").classList.remove("hidden");
+  $("barFill").style.width = "100%";
+
+  const answeredIdx = Object.keys(results).map(Number).sort((a, b) => a - b);
+  const total = answeredIdx.length;
+  const score = answeredIdx.filter(qi => results[qi].correct).length;
+  const wrongIdx = answeredIdx.filter(qi => !results[qi].correct);
+
+  $("scoreBig").textContent = score + " / " + total;
+  const pct = Math.round(score / total * 100);
+  $("scoreSub").textContent = "정답률 " + pct + "%";
+
+  let msg;
+  if (wrongIdx.length === 0) msg = "전 문항 정답 — 놓친 키워드가 없습니다 👍";
+  else msg = "틀린 " + wrongIdx.length + "문항의 키워드를 다시 확인하세요.";
+  $("scoreMsg").textContent = msg;
+
+  const retryWrong = $("retryWrongBtn");
+  if (wrongIdx.length > 0) {
+    retryWrong.classList.remove("hidden");
+    retryWrong.onclick = () => startRound(wrongIdx, true);
+  } else {
+    retryWrong.classList.add("hidden");
+  }
+  $("retryAllBtn").onclick = () => startRound(QUESTIONS.map((_, i) => i), false);
+
+  const list = $("reviewList");
+  list.innerHTML = "";
+  answeredIdx.forEach(qi => {
+    const Q = QUESTIONS[qi];
+    const r = results[qi];
+    const ok = r && r.correct;
+    const item = document.createElement("div");
+    item.className = "review-item";
+    item.innerHTML =
+      '<div class="ri-q">' + (qi + 1) + '. ' + Q.q +
+      '<span class="ri-tag ' + (ok ? "ok" : "no") + '">' + (ok ? "정답" : "오답") + '</span></div>' +
+      '<div class="ri-detail">정답: ' + (Q.answer + 1) + '번 · 필수 키워드 <b>' + Q.kw + '</b></div>';
+    list.appendChild(item);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

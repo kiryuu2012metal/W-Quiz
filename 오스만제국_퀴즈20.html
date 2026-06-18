@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오스만 제국 퀴즈 — 세계문화사</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --crimson:    #8B1A1A;
+    --gold:       #C9922A;
+    --gold-light: #E8B84B;
+    --ivory:      #F5EDD6;
+    --ivory-dark: #EAD9B4;
+    --parchment:  #D6C49A;
+    --ink:        #1C1209;
+    --ink-soft:   #3A2A14;
+    --teal:       #1A5C5C;
+    --teal-light: #2A8080;
+    --correct:    #1A6B3C;
+    --wrong:      #8B1A1A;
+    --shadow:     rgba(28,18,9,.35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% 0%, #2a1400 0%, transparent 70%),
+      repeating-linear-gradient(45deg, rgba(201,146,42,.04) 0px, rgba(201,146,42,.04) 1px, transparent 1px, transparent 12px),
+      repeating-linear-gradient(-45deg, rgba(201,146,42,.04) 0px, rgba(201,146,42,.04) 1px, transparent 1px, transparent 12px);
+    min-height: 100vh;
+    font-family: 'Noto Serif KR', serif;
+    color: var(--ivory);
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  .hero {
+    text-align: center;
+    padding: 52px 24px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(201,146,42,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .ornament {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: .7;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(24px, 5vw, 42px);
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1.15;
+    text-shadow: 0 2px 20px rgba(201,146,42,.4);
+    margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: var(--parchment);
+    opacity: .75;
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    max-width: 420px; margin: 0 auto 32px;
+  }
+  .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent); }
+  .divider-diamond {
+    width: 8px; height: 8px; background: var(--gold);
+    transform: rotate(45deg); flex-shrink: 0;
+  }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard {
+    display: flex; justify-content: center; gap: 28px;
+    margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .score-badge {
+    background: rgba(201,146,42,.12);
+    border: 1px solid rgba(201,146,42,.3);
+    border-radius: 8px;
+    padding: 10px 24px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .score-badge .num {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .score-badge .lbl {
+    font-size: 11px;
+    color: var(--parchment);
+    opacity: .7;
+    letter-spacing: 1px;
+    margin-top: 3px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    max-width: 560px; margin: 0 auto 8px;
+    background: rgba(255,255,255,.07);
+    border-radius: 99px; height: 6px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 99px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .progress-label {
+    text-align: center; font-size: 11px;
+    color: var(--parchment); opacity: .55;
+    letter-spacing: 1px; margin-bottom: 36px;
+  }
+
+  /* ── QUIZ WRAPPER ── */
+  .quiz-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: linear-gradient(160deg, #2A1A08 0%, #1C1209 60%, #200E06 100%);
+    border: 1px solid rgba(201,146,42,.22);
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(18px);
+    animation: fadeUp .45s ease forwards;
+    box-shadow: 0 8px 32px var(--shadow);
+  }
+  .q-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .q-card:nth-child(1)  { animation-delay: .05s }
+  .q-card:nth-child(2)  { animation-delay: .10s }
+  .q-card:nth-child(3)  { animation-delay: .15s }
+  .q-card:nth-child(4)  { animation-delay: .20s }
+  .q-card:nth-child(5)  { animation-delay: .25s }
+  .q-card:nth-child(6)  { animation-delay: .30s }
+  .q-card:nth-child(7)  { animation-delay: .35s }
+  .q-card:nth-child(8)  { animation-delay: .40s }
+  .q-card:nth-child(9)  { animation-delay: .45s }
+  .q-card:nth-child(10) { animation-delay: .50s }
+  .q-card:nth-child(11) { animation-delay: .55s }
+  .q-card:nth-child(12) { animation-delay: .60s }
+  .q-card:nth-child(13) { animation-delay: .65s }
+  .q-card:nth-child(14) { animation-delay: .70s }
+  .q-card:nth-child(15) { animation-delay: .75s }
+  .q-card:nth-child(16) { animation-delay: .80s }
+  .q-card:nth-child(17) { animation-delay: .85s }
+  .q-card:nth-child(18) { animation-delay: .90s }
+  .q-card:nth-child(19) { animation-delay: .95s }
+  .q-card:nth-child(20) { animation-delay: 1.00s }
+
+  .q-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    opacity: .65;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ivory);
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+  .q-text em {
+    color: var(--gold-light);
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  /* ── OPTIONS ── */
+  .options {
+    display: grid;
+    gap: 10px;
+  }
+  .opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(201,146,42,.15);
+    border-radius: 10px;
+    padding: 13px 18px;
+    cursor: pointer;
+    transition: all .2s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .opt::before {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(201,146,42,.07);
+    opacity: 0; transition: opacity .2s;
+  }
+  .opt:hover::before { opacity: 1; }
+  .opt:hover { border-color: rgba(201,146,42,.4); transform: translateX(3px); }
+  .opt.selected { border-color: var(--gold); background: rgba(201,146,42,.1); }
+  .opt.correct  {
+    border-color: #2ECC71; background: rgba(46,204,113,.1);
+    pointer-events: none;
+  }
+  .opt.wrong    {
+    border-color: var(--crimson); background: rgba(139,26,26,.15);
+    pointer-events: none;
+  }
+  .opt.reveal-correct {
+    border-color: #2ECC71; background: rgba(46,204,113,.07);
+    pointer-events: none;
+  }
+  .opt.disabled { pointer-events: none; opacity: .55; }
+
+  .opt-label {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 22px;
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+  .opt.correct  .opt-label { color: #2ECC71; }
+  .opt.wrong    .opt-label { color: #E74C3C; }
+  .opt.reveal-correct .opt-label { color: #2ECC71; }
+
+  .opt-text {
+    font-size: 14px;
+    color: var(--ivory);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .opt-icon {
+    margin-left: auto; font-size: 16px; line-height: 1.5;
+    flex-shrink: 0;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.65;
+    display: none;
+    border-left: 3px solid;
+  }
+  .feedback.show { display: block; animation: fadeIn .3s ease; }
+  .feedback.ok  { background: rgba(46,204,113,.08);  border-color: #2ECC71; color: #A8F0C6; }
+  .feedback.bad { background: rgba(139,26,26,.12);   border-color: #E74C3C; color: #F0A8A8; }
+  .feedback strong { font-weight: 700; display: block; margin-bottom: 4px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── RESULT PANEL ── */
+  .result-panel {
+    display: none;
+    text-align: center;
+    padding: 48px 32px;
+    background: linear-gradient(160deg, #2A1A08, #1C1209);
+    border: 1px solid rgba(201,146,42,.3);
+    border-radius: 20px;
+    margin-top: 16px;
+    box-shadow: 0 16px 60px var(--shadow);
+    animation: fadeUp .5s ease;
+  }
+  .result-panel.show { display: block; }
+  .result-grade {
+    font-family: 'Cinzel', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--gold-light);
+    text-shadow: 0 0 30px rgba(201,146,42,.5);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .result-label {
+    font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 4px;
+    color: var(--parchment); opacity: .7;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .result-msg {
+    font-size: 18px; font-weight: 600;
+    color: var(--ivory); margin-bottom: 8px;
+  }
+  .result-sub {
+    font-size: 13px; color: var(--parchment);
+    opacity: .65; line-height: 1.7; margin-bottom: 32px;
+  }
+  .retry-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--ink);
+    border: none;
+    border-radius: 10px;
+    padding: 14px 40px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    text-transform: uppercase;
+    box-shadow: 0 4px 20px rgba(201,146,42,.3);
+  }
+  .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,146,42,.4); }
+
+  /* ── CATEGORY TAG ── */
+  .q-tag {
+    display: inline-block;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    background: rgba(26,92,92,.2);
+    border: 1px solid rgba(42,128,128,.3);
+    border-radius: 99px;
+    padding: 2px 10px;
+    margin-bottom: 10px;
+  }
+
+  @media (max-width: 560px) {
+    .q-card { padding: 22px 20px; }
+    .hero { padding: 36px 16px 28px; }
+    .scoreboard { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="ornament">세계문화사 · 국가직 6급 학예직 대비</span>
+  <h1>오스만 제국<br>핵심 퀴즈</h1>
+  <p class="hero-sub">20문항 · 객관식 4지선다</p>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-line"></div>
+  </div>
+  <div class="scoreboard">
+    <div class="score-badge"><div class="num" id="sc-correct">0</div><div class="lbl">정답</div></div>
+    <div class="score-badge"><div class="num" id="sc-wrong">0</div><div class="lbl">오답</div></div>
+    <div class="score-badge"><div class="num" id="sc-remain">20</div><div class="lbl">남은 문제</div></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog"></div></div>
+  <div class="progress-label" id="prog-lbl">0 / 20</div>
+</div>
+
+<div class="quiz-wrap" id="quiz"></div>
+<div class="quiz-wrap"><div class="result-panel" id="result"></div></div>
+
+<script>
+const Q = [
+  {
+    cat: "건국·성립",
+    q: "오스만 제국의 국호는 누구의 이름에서 유래하였는가?",
+    opts: ["무라트 1세","오스만 1세","바야지트 1세","메흐메트 1세"],
+    ans: 1,
+    fb: "오스만 제국(Osmanlı)은 13세기 말 소아시아 북서부 투르크 부족의 지도자 <strong>오스만 1세</strong>의 이름에서 국호가 유래하였다."
+  },
+  {
+    cat: "초기 팽창",
+    q: "오스만 제국이 세르비아 연합군을 격파하여 남동유럽 진출의 기반을 마련한 전투(1389)의 이름은?",
+    opts: ["모하치 전투","코소보 전투","앙카라 전투","찰디란 전투"],
+    ans: 1,
+    fb: "<strong>1389년 코소보 전투</strong>에서 무라트 1세·바야지트 1세가 세르비아 연합군을 격파하며 발칸반도 지배 기반을 마련하였다."
+  },
+  {
+    cat: "위기와 재건",
+    q: "1402년 앙카라 전투에서 오스만 제국을 패배시킨 세력은?",
+    opts: ["몽골 제국","사파비 왕조","티무르 제국","맘루크 왕조"],
+    ans: 2,
+    fb: "<strong>1402년 앙카라 전투</strong>에서 티무르(타메를란)가 이끄는 <strong>티무르 제국</strong>에 패배하여 오스만은 일시적으로 분열하는 위기를 겪었다."
+  },
+  {
+    cat: "위기와 재건",
+    q: "앙카라 전투 패배 이후 오스만 제국의 재건을 이끈 두 술탄은?",
+    opts: ["셀림 1세·슐레이만 1세","메흐메트 1세·무라트 2세","무라트 1세·바야지트 1세","메흐메트 2세·셀림 1세"],
+    ans: 1,
+    fb: "앙카라 패배 이후 <strong>메흐메트 1세</strong>가 분열을 수습하고, 아들 <strong>무라트 2세</strong>가 제국 재건을 완성하였다."
+  },
+  {
+    cat: "콘스탄티노폴리스 정복",
+    q: "메흐메트 2세가 콘스탄티노폴리스를 함락시킨 연도는?",
+    opts: ["1389년","1402년","1453년","1514년"],
+    ans: 2,
+    fb: "<strong>1453년</strong> 메흐메트 2세는 54일간의 포위 끝에 콘스탄티노폴리스를 함락하였다. 이 사건으로 동로마 제국은 멸망하였다."
+  },
+  {
+    cat: "콘스탄티노폴리스 정복",
+    q: "메흐메트 2세가 콘스탄티노폴리스 공략 시 활용한 독창적 전술로, 금각만을 내해에서 공격하기 위해 취한 방법은?",
+    opts: ["수중 터널 굴착","함선을 육로로 이동","화공선 투입","수군 봉쇄"],
+    ans: 1,
+    fb: "메흐메트 2세는 <strong>함선을 육로로 이동</strong>시켜 비잔틴 측이 쇠사슬로 막고 있던 금각만을 우회 공격하였다. 공성포 사용과 함께 이 전술이 함락의 결정적 요인이 되었다."
+  },
+  {
+    cat: "콘스탄티노폴리스 정복",
+    q: "콘스탄티노폴리스 포위 기간은 얼마였는가?",
+    opts: ["21일","35일","54일","72일"],
+    ans: 2,
+    fb: "<strong>54일간</strong>의 포위 끝에 콘스탄티노폴리스는 1453년 5월 29일 함락되었다."
+  },
+  {
+    cat: "역사적 의의",
+    q: "콘스탄티노폴리스 함락(1453)의 역사적 의의를 가장 정확하게 서술한 것은?",
+    opts: [
+      "이슬람 세계의 통일을 완성한 사건",
+      "중세에서 근세로의 전환을 상징하는 역사적 전환점",
+      "오스만 제국 쇠퇴의 시발점",
+      "르네상스의 직접적 원인"
+    ],
+    ans: 1,
+    fb: "콘스탄티노폴리스 함락은 <strong>중세에서 근세로의 전환을 상징</strong>하는 역사적 전환점으로 평가된다. 단순히 '중세의 종언'보다 '근세로의 전환'이라는 표현이 더 정밀하다."
+  },
+  {
+    cat: "셀림 1세",
+    q: "1514년 셀림 1세가 시아파인 사파비 왕조를 격파한 전투는?",
+    opts: ["코소보 전투","앙카라 전투","모하치 전투","찰디란 전투"],
+    ans: 3,
+    fb: "<strong>1514년 찰디란 전투</strong>에서 셀림 1세는 사파비 왕조의 이스마일 1세를 격파하여 수니파 이슬람의 수호자로서의 위상을 확립하였다."
+  },
+  {
+    cat: "셀림 1세",
+    q: "셀림 1세가 맘루크 왕조를 정복하여 확보한 권한으로, 오스만 술탄이 이슬람 세계 종주권의 명분으로 삼은 것은?",
+    opts: [
+      "예루살렘 단독 지배권",
+      "지중해 해상 통행권",
+      "메카·메디나 보호권 및 칼리프 권위",
+      "바그다드 행정권"
+    ],
+    ans: 2,
+    fb: "셀림 1세는 맘루크 왕조 정복으로 <strong>메카·메디나의 보호권</strong>을 확보하였고, 이를 기반으로 <strong>칼리프 권위를 명분 삼아 이슬람 세계의 종주권을 주장</strong>하였다."
+  },
+  {
+    cat: "슐레이만 1세",
+    q: "슐레이만 1세가 제1차 빈 포위를 감행한 연도는?",
+    opts: ["1517년","1526년","1529년","1571년"],
+    ans: 2,
+    fb: "<strong>1529년</strong> 슐레이만 1세는 제1차 빈 포위를 감행하여 유럽 기독교 세계에 위기감을 고조시켰다. 단, 이 포위는 실패하여 오스만 서진(西進)의 한계를 드러냈다."
+  },
+  {
+    cat: "슐레이만 1세",
+    q: "슐레이만 1세의 제1차 빈 포위(1529)의 결과로 옳은 것은?",
+    opts: [
+      "빈을 함락하고 오스트리아를 병합하였다",
+      "빈 함락에 실패하여 오스만 서진의 한계를 드러냈다",
+      "합스부르크와 강화조약을 체결하고 영토를 할양받았다",
+      "이후 제2차 포위로 빈을 최종 점령하였다"
+    ],
+    ans: 1,
+    fb: "슐레이만 1세는 빈 공략에 <strong>실패</strong>하였으며, 이는 오스만 제국 서진 팽창의 한계를 드러낸 사건으로 평가된다. 제2차 빈 포위(1683)도 실패로 끝났다."
+  },
+  {
+    cat: "데브시르메 제도",
+    q: "오스만 제국이 정복지의 기독교 소년들을 선발하여 예니체리(친위군)와 관료층으로 육성한 제도는?",
+    opts: ["지즈야 제도","밀레트 제도","데브시르메 제도","이크타 제도"],
+    ans: 2,
+    fb: "<strong>데브시르메 제도</strong>는 정복지의 기독교 소년을 선발하여 이슬람으로 개종시킨 뒤 예니체리 군단과 관료층으로 육성하는 제도이다."
+  },
+  {
+    cat: "데브시르메 제도",
+    q: "데브시르메 제도의 정치적 기능으로 가장 적절한 것은?",
+    opts: [
+      "비이슬람 공동체에 자치권을 부여하는 수단",
+      "술탄 직속 권력 기반 강화 및 봉건 귀족 견제",
+      "지방 태수(발리)의 반란을 방지하기 위한 인질 제도",
+      "이슬람 개종을 강제하는 종교 정책"
+    ],
+    ans: 1,
+    fb: "데브시르메로 양성된 예니체리와 관료층은 <strong>술탄 직속</strong> 충성 세력으로, 독립적 세력 기반을 가진 <strong>봉건 귀족을 견제</strong>하는 수단으로 기능하였다."
+  },
+  {
+    cat: "밀레트 제도",
+    q: "오스만 제국에서 비이슬람 공동체(기독교·유대교 등)에 자치권을 부여한 통치 제도는?",
+    opts: ["데브시르메 제도","지즈야 제도","밀레트 제도","티마르 제도"],
+    ans: 2,
+    fb: "<strong>밀레트 제도</strong>는 비이슬람 공동체(루룸, 아르메니아, 유대교 등)를 종교 공동체 단위로 인정하고 자치권을 부여한 제도이다. 데브시르메(개인 선발)와 혼동하지 않도록 주의한다."
+  },
+  {
+    cat: "밀레트 제도",
+    q: "데브시르메 제도와 밀레트 제도의 차이를 가장 정확하게 설명한 것은?",
+    opts: [
+      "두 제도 모두 비이슬람 공동체에 자치권을 부여하는 제도이다",
+      "데브시르메는 개인 선발·군사 제도, 밀레트는 공동체 단위 자치 허용 제도이다",
+      "데브시르메는 세금 제도이고, 밀레트는 군사 징집 제도이다",
+      "두 제도 모두 이슬람 개종을 강제하는 것이 목적이다"
+    ],
+    ans: 1,
+    fb: "<strong>데브시르메</strong>는 개인(소년)을 선발하여 예니체리·관료로 양성하는 군사·행정 제도이고, <strong>밀레트</strong>는 비이슬람 공동체 전체에 자치권을 인정하는 행정 제도이다. 반드시 분리하여 서술해야 한다."
+  },
+  {
+    cat: "유럽에 미친 영향",
+    q: "콘스탄티노폴리스 함락 후 비잔틴의 그리스 학자들이 이탈리아로 망명하여 기여한 역사적 흐름은?",
+    opts: ["종교개혁","르네상스","대항해시대","계몽주의"],
+    ans: 1,
+    fb: "비잔틴 그리스 학자들은 이탈리아(피렌체, 베네치아 등)로 망명하여 <strong>고전 그리스 문화와 고대 철학을 전파</strong>함으로써 <strong>르네상스</strong> 발전에 기여하였다."
+  },
+  {
+    cat: "유럽에 미친 영향",
+    q: "오스만 제국의 동지중해 장악이 대항해시대를 촉진한 직접적 배경으로 가장 정확한 것은?",
+    opts: [
+      "오스만이 동지중해 항로를 완전히 봉쇄하였기 때문이다",
+      "오스만의 향신료 가격 인하 정책으로 직접 교역의 필요성이 줄었기 때문이다",
+      "이탈리아 중개상인을 통한 향신료 교역 비용이 증가하자 유럽이 직접 교역 항로를 개척하였기 때문이다",
+      "오스만이 유럽 선박의 대서양 진출을 막았기 때문이다"
+    ],
+    ans: 2,
+    fb: "오스만 제국은 교역로를 '봉쇄'한 것이 아니라 중간 수수료를 취하며 유지하였다. 진짜 요인은 <strong>이탈리아 중개상인을 통한 비용 증가</strong>에 대한 반발로, 포르투갈·에스파냐가 아시아와 <strong>직접 교역</strong>하기 위해 새 항로를 개척한 것이다."
+  },
+  {
+    cat: "이슬람 세계 재편",
+    q: "찰디란 전투(1514) 이후 오스만 제국과 사파비 왕조의 대립이 고착화시킨 이슬람 내부의 구도는?",
+    opts: [
+      "아랍파 대 투르크파의 민족 갈등",
+      "수니파 대 시아파의 종파 대립",
+      "오스만 칼리프 대 사파비 칼리프의 권위 경쟁",
+      "이슬람 제국 분열 대 통합의 갈등"
+    ],
+    ans: 1,
+    fb: "찰디란 전투로 오스만(수니파)과 사파비(시아파)의 대립이 고착화되었고, <strong>수니-시아 종파 대립 구도</strong>가 중동 지역의 지속적인 갈등 구조로 심화되었다."
+  },
+  {
+    cat: "종합·문명사적 의의",
+    q: "오스만 제국의 성장과 콘스탄티노폴리스 정복이 이슬람 세계에 가져온 가장 핵심적인 변화는?",
+    opts: [
+      "이슬람 세계의 통일과 단일 칼리프제 수립",
+      "이슬람 세계의 중심이 아랍에서 투르크로 이동",
+      "이슬람의 유럽 대륙 전면 지배",
+      "아바스 왕조 칼리프제의 부활"
+    ],
+    ans: 1,
+    fb: "오스만 제국의 팽창은 <strong>이슬람 세계의 중심이 아랍(이집트·시리아·메소포타미아)에서 투르크(소아시아·발칸)로 이동</strong>하는 문명사적 전환을 가져왔으며, 수니-시아 대립 고착과 함께 동서양 역사의 문명사적 전환점을 마련하였다."
+  }
+];
+
+// ── STATE ──
+let answered = 0, correct = 0, wrong = 0;
+
+function updateScoreboard() {
+  document.getElementById('sc-correct').textContent = correct;
+  document.getElementById('sc-wrong').textContent = wrong;
+  document.getElementById('sc-remain').textContent = 20 - answered;
+  const pct = (answered / 20) * 100;
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent = `${answered} / 20`;
+  if (answered === 20) showResult();
+}
+
+function showResult() {
+  const panel = document.getElementById('result');
+  const pct = Math.round((correct / 20) * 100);
+  let grade, msg, sub;
+  if (pct === 100) {
+    grade = '100'; msg = '🏆 완벽한 정복자!';
+    sub = '오스만 제국의 모든 핵심 개념을 완벽히 숙지하셨습니다.\n학예직 시험 준비 완료입니다.';
+  } else if (pct >= 85) {
+    grade = pct + ''; msg = '🌟 우수한 역사가!';
+    sub = '거의 완벽합니다. 오답 문항을 다시 확인하고\n핵심 연도와 제도 명칭을 한 번 더 정리해 보세요.';
+  } else if (pct >= 70) {
+    grade = pct + ''; msg = '📚 양호한 수험생';
+    sub = '기본기는 탄탄합니다. 데브시르메·밀레트 제도와\n찰디란·빈 포위 등 전성기 서술을 보완하세요.';
+  } else {
+    grade = pct + ''; msg = '🕯 다시 한 번!';
+    sub = '모범답안 본문을 다시 정독하고 체크리스트를\n차례대로 확인하며 재도전해 보세요.';
+  }
+  panel.innerHTML = `
+    <div class="result-grade">${grade}점</div>
+    <div class="result-label">최종 점수 · ${correct} / 20 정답</div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-sub">${sub}</div>
+    <button class="retry-btn" onclick="location.reload()">다시 도전하기</button>`;
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── RENDER ──
+const quiz = document.getElementById('quiz');
+Q.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'q-card';
+  card.id = `q${qi}`;
+  const optsHTML = item.opts.map((o, i) => `
+    <div class="opt" data-qi="${qi}" data-i="${i}" onclick="pick(${qi},${i})">
+      <span class="opt-label">${['A','B','C','D'][i]}</span>
+      <span class="opt-text">${o}</span>
+      <span class="opt-icon"></span>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="q-num">Q${String(qi+1).padStart(2,'0')}</div>
+    <span class="q-tag">${item.cat}</span>
+    <div class="q-text">${item.q}</div>
+    <div class="options" id="opts${qi}">${optsHTML}</div>
+    <div class="feedback" id="fb${qi}"></div>`;
+  quiz.appendChild(card);
+});
+
+function pick(qi, i) {
+  const item = Q[qi];
+  const opts = document.querySelectorAll(`#opts${qi} .opt`);
+  const fb = document.getElementById(`fb${qi}`);
+  const isCorrect = i === item.ans;
+
+  opts.forEach((el, idx) => {
+    el.classList.add('disabled');
+    if (idx === item.ans) el.classList.add('reveal-correct');
+  });
+  opts[i].classList.remove('disabled');
+  opts[i].classList.add(isCorrect ? 'correct' : 'wrong');
+  opts[i].querySelector('.opt-icon').textContent = isCorrect ? '✓' : '✗';
+  opts[item.ans].querySelector('.opt-icon').textContent = '✓';
+
+  fb.innerHTML = `<strong>${isCorrect ? '✅ 정답입니다!' : '❌ 오답입니다.'}</strong>${item.fb}`;
+  fb.className = `feedback show ${isCorrect ? 'ok' : 'bad'}`;
+
+  answered++;
+  if (isCorrect) correct++; else wrong++;
+  updateScoreboard();
+}
+</script>
+</body>
+</html>

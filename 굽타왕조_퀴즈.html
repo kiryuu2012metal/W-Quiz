@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>굽타 왕조 인도 고전 문화 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #2c2c2a; line-height: 1.7; }
+  .container { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 2rem; }
+  .progress-wrap { background: #e0ded6; border-radius: 99px; height: 6px; margin-bottom: 2rem; }
+  .progress-bar { background: #534AB7; height: 6px; border-radius: 99px; transition: width 0.4s; }
+  .question-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .q-num { font-size: 12px; color: #888780; }
+  .q-tag { font-size: 11px; background: #EEEDFE; color: #3C3489; padding: 2px 8px; border-radius: 6px; }
+  .q-text { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; line-height: 1.6; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn { text-align: left; padding: 10px 14px; border: 0.5px solid #d3d1c7; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; transition: background 0.15s, border-color 0.15s; color: #2c2c2a; line-height: 1.5; }
+  .option-btn:hover:not(:disabled) { background: #f1efe8; border-color: #b4b2a9; }
+  .option-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; font-weight: 500; }
+  .option-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+  .option-btn.reveal { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .option-btn:disabled { cursor: default; }
+  .explanation { margin-top: 12px; padding: 12px 14px; background: #f5f4f0; border-radius: 8px; font-size: 13px; color: #5F5E5A; line-height: 1.7; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #3C3489; }
+  .result-icon { font-size: 18px; margin-right: 6px; }
+
+  .nav-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #2c2c2a; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn-primary { background: #534AB7; color: #fff; border-color: #534AB7; }
+  .btn-primary:hover { background: #3C3489; }
+  .btn-danger { background: #E24B4A; color: #fff; border-color: #E24B4A; }
+  .btn-danger:hover { background: #A32D2D; }
+
+  .summary-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 2rem; text-align: center; }
+  .summary-score { font-size: 48px; font-weight: 500; color: #534AB7; }
+  .summary-label { font-size: 14px; color: #888780; margin-bottom: 1.5rem; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .summary-item { background: #f5f4f0; border-radius: 8px; padding: 1rem; }
+  .summary-item-num { font-size: 22px; font-weight: 500; }
+  .summary-item-label { font-size: 12px; color: #888780; }
+  .wrong-list { text-align: left; margin-top: 1rem; }
+  .wrong-item { padding: 8px 0; border-bottom: 0.5px solid #e0ded6; font-size: 13px; color: #5F5E5A; }
+  .wrong-item:last-child { border-bottom: none; }
+
+  .hidden { display: none; }
+  .section-title { font-size: 14px; font-weight: 500; color: #888780; margin: 1.5rem 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>굽타 왕조 인도 고전 문화</h1>
+  <p class="subtitle">국가직 6급 세계문화사 대비 · 4지선다 퀴즈</p>
+
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+  <div id="quizArea"></div>
+  <div class="nav-row" id="navRow"></div>
+  <div id="summaryArea" class="hidden"></div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    tag: "배경·성립",
+    q: "굽타 왕조를 건국한 인물과 그 위치로 옳은 것은?",
+    options: ["아소카왕 — 인더스강 유역", "찬드라굽타 1세 — 갠지스강 유역", "카니슈카왕 — 간다라 지방", "바부르 — 펀자브 지방"],
+    answer: 1,
+    exp: "굽타 왕조는 4세기 <strong>찬드라굽타 1세</strong>가 <strong>갠지스강 유역</strong>에서 건국하였다. 이후 찬드라굽타 2세가 벵골만에서 인더스강 유역까지 세력을 확장하여 최대 영토를 확보하였다."
+  },
+  {
+    tag: "문학",
+    q: "굽타 왕조 시기 산스크리트 문학 발달의 직접적 배경으로 가장 적절한 것은?",
+    options: ["대승 불교의 전파", "산스크리트어의 공용어 채택", "이슬람 상인의 교역 확대", "간다라 양식의 보급"],
+    answer: 1,
+    exp: "<strong>산스크리트어가 공용어로 채택</strong>되면서 산스크리트 문학이 크게 발달하였다. 이 시기 칼리다사가 희곡 《샤쿤탈라》를 집필하고, 서사시 《마하바라타》와 《라마야나》가 정리·완성되었다."
+  },
+  {
+    tag: "문학",
+    q: "칼리다사의 작품으로 옳게 묶인 것은?",
+    options: ["마하바라타·라마야나", "샤쿤탈라·메가두타", "마누 법전·아르타샤스트라", "우파니샤드·베다"],
+    answer: 1,
+    exp: "굽타 왕조 시기의 대표 문인 <strong>칼리다사</strong>는 희곡 <strong>《샤쿤탈라》</strong>와 서정 서사시 <strong>《메가두타》</strong>를 남겼다. 《마하바라타》와 《라마야나》는 이 시기에 정리·완성된 고대 서사시이다."
+  },
+  {
+    tag: "수학·과학",
+    q: "굽타 왕조 시기 아리아바타의 업적으로 옳은 것을 모두 고른 것은?",
+    options: ["원주율 계산과 지구 자전설", "0의 개념과 10진법 체계화", "태양 중심설과 만유인력", "달력 제작과 의학 발전"],
+    answer: 0,
+    exp: "<strong>아리아바타</strong>는 원주율을 이용하여 지구 둘레를 추산하고 <strong>지구 자전설</strong>을 제시하였다. 0의 개념과 10진법 체계화는 <strong>브라마굽타</strong>의 업적이다."
+  },
+  {
+    tag: "수학·과학",
+    q: "굽타 왕조의 수학·과학 성과가 세계에 미친 영향으로 옳은 것은?",
+    options: ["그리스를 거쳐 로마 제국에 직접 전파되었다", "동남아시아 힌두 왕국을 통해 인도양 교역에 활용되었다", "이슬람 세계를 거쳐 유럽에 전파되어 근대 수학의 기반이 되었다", "실크로드를 통해 한나라에 전파되어 역법 개혁을 이끌었다"],
+    answer: 2,
+    exp: "인도의 0과 10진법, 천문학 지식은 <strong>이슬람 세계로 전파</strong>되어 이슬람 학문 발전에 기여하였으며, 이후 유럽에 전해져 <strong>근대 수학 발전의 기반</strong>이 되었다."
+  },
+  {
+    tag: "예술",
+    q: "굽타 양식의 성격을 가장 옳게 설명한 것은?",
+    options: ["헬레니즘 양식만을 수용하여 사실적 불상을 제작하였다", "간다라 양식과 인도 고유 특색을 융합한 불교 미술 양식이다", "이슬람의 기하학 문양을 불교 도상에 접목한 양식이다", "중국 한대 미술 양식이 인도로 역수입된 것이다"],
+    answer: 1,
+    exp: "<strong>굽타 양식</strong>은 쿠샨 왕조 시기 형성된 <strong>간다라 양식</strong>(헬레니즘 영향)과 <strong>인도 고유의 특색</strong>이 융합된 양식이다. 온화한 표정과 균형 잡힌 비례를 특징으로 하며 인도 불교 미술의 전형을 확립하였다."
+  },
+  {
+    tag: "예술",
+    q: "굽타 왕조 시기 조성된 석굴 사원으로 옳게 묶인 것은?",
+    options: ["산치 대탑·스투파", "아잔타 석굴·엘로라 석굴", "운강 석굴·용문 석굴", "석굴암·불국사"],
+    answer: 1,
+    exp: "굽타 왕조 시기에는 <strong>아잔타 석굴 사원</strong>과 <strong>엘로라 석굴 사원</strong>에서 불상과 벽화가 제작되어 높은 예술성을 보여 주었다. 운강·용문 석굴은 중국, 석굴암은 한국의 유적이다."
+  },
+  {
+    tag: "힌두교",
+    q: "굽타 왕조 시기 힌두교 발전과 관련된 설명으로 옳지 않은 것은?",
+    options: ["브라만교를 바탕으로 불교·민간 신앙이 융합되어 형성되었다", "브라흐마·비슈누·시바 등 다양한 신을 숭배하였다", "《마누 법전》이 정비되어 힌두교도의 일상생활에 영향을 미쳤다", "아소카왕의 후원으로 국교로 공인되어 빠르게 전파되었다"],
+    answer: 3,
+    exp: "힌두교를 적극 후원한 것은 굽타 왕조 시기 왕들이며, <strong>아소카왕</strong>은 마우리아 왕조 시기 <strong>불교</strong>를 장려한 인물이다. 힌두교는 브라만교에 불교와 민간 신앙이 융합되어 형성되었으며 《마누 법전》 정비로 일상생활 규범으로 자리 잡았다."
+  },
+  {
+    tag: "동아시아 영향",
+    q: "굽타 문화가 동아시아로 전파되는 경로로 옳은 것은?",
+    options: ["인도양 해로 → 동남아시아 → 중국 남부", "실크로드(중앙아시아) → 중국 → 한국·일본", "이슬람 상인의 중계 → 아라비아 → 동아시아", "마우리아 왕조 사신단 → 한반도 직접 전달"],
+    answer: 1,
+    exp: "굽타 양식의 불상과 불교 미술은 <strong>실크로드(중앙아시아)</strong>를 거쳐 중국으로 전해졌고, 다시 한국과 일본에 영향을 주었다. 중국의 운강·용문 석굴, 한국의 석굴암, 일본의 불교 미술이 그 사례이다."
+  },
+  {
+    tag: "동아시아 영향",
+    q: "굽타 문화의 영향을 받은 동아시아 불교 유적으로 옳지 않은 것은?",
+    options: ["중국 운강 석굴", "중국 용문 석굴", "한국 석굴암", "인도 보로부두르"],
+    answer: 3,
+    exp: "<strong>보로부두르</strong>는 인도네시아 자와섬에 세워진 <strong>샤일렌드라 왕조</strong>의 대승 불교 사원이다. 운강·용문 석굴(중국), 석굴암(한국), 일본의 불교 미술은 굽타 문화의 영향을 받은 동아시아 유적이다."
+  },
+  {
+    tag: "서아시아 영향",
+    q: "굽타 왕조의 문화가 이슬람 세계(서아시아)에 미친 영향으로 옳은 것은?",
+    options: ["힌두교가 이슬람교와 융합되어 시크교를 탄생시켰다", "0·10진법, 천문학·의학 지식이 전파되어 이슬람 학문 발전에 기여하였다", "굽타 양식의 건축이 이슬람 사원 건축에 직접 반영되었다", "산스크리트어가 이슬람 세계의 공용 학술어가 되었다"],
+    answer: 1,
+    exp: "인도의 <strong>0과 10진법</strong>, 천문학·의학 지식이 이슬람 세계로 전파되어 이슬람 학문 발전에 크게 기여하였다. 또한 일부 인도 문학 작품이 아랍어로 번역되어 이슬람 문화에 영향을 주었다."
+  },
+  {
+    tag: "종합",
+    q: "다음 중 굽타 왕조에 대한 설명으로 옳은 것은?",
+    options: ["에프탈의 침입을 받지 않고 평화롭게 번영을 지속하였다", "마우리아 왕조의 아소카왕이 굽타 왕조를 개창하였다", "산스크리트 문학, 굽타 양식, 힌두교 발전 등 인도 고전 문화의 황금기를 이루었다", "대승 불교가 아닌 상좌부 불교만을 후원하였다"],
+    answer: 2,
+    exp: "굽타 왕조는 4~6세기 인도 고전 문화의 황금기를 이루었다. 그러나 <strong>5세기 이후 에프탈의 침입</strong>과 왕위 계승 내분으로 쇠퇴하다 6세기에 멸망하였다. 개창자는 아소카왕이 아니라 <strong>찬드라굽타 1세</strong>이다."
+  }
+];
+
+let currentQuestions = [];
+let currentIdx = 0;
+let answered = [];
+let wrongIndices = [];
+let isRetryMode = false;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function startQuiz(questions, retryMode = false) {
+  currentQuestions = questions;
+  currentIdx = 0;
+  answered = new Array(questions.length).fill(null);
+  wrongIndices = [];
+  isRetryMode = retryMode;
+  document.getElementById('summaryArea').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentIdx];
+  const total = currentQuestions.length;
+  const pct = (currentIdx / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  const isAnswered = answered[currentIdx] !== null;
+  const selected = answered[currentIdx];
+
+  let optionsHtml = q.options.map((opt, i) => {
+    let cls = 'option-btn';
+    if (isAnswered) {
+      if (i === q.answer) cls += ' correct';
+      else if (i === selected && selected !== q.answer) cls += ' wrong';
+    }
+    return `<button class="${cls}" ${isAnswered ? 'disabled' : ''} onclick="selectAnswer(${i})">${['①','②','③','④'][i]} ${opt}</button>`;
+  }).join('');
+
+  let expHtml = '';
+  if (isAnswered) {
+    const icon = selected === q.answer ? '✅' : '❌';
+    expHtml = `<div class="explanation show"><span class="result-icon">${icon}</span><strong>${selected === q.answer ? '정답입니다!' : '오답입니다.'}</strong><br><br>${q.exp}</div>`;
+  }
+
+  let navHtml = '';
+  if (isAnswered) {
+    if (currentIdx < total - 1) {
+      navHtml = `<button class="btn btn-primary" onclick="nextQ()">다음 문제 →</button>`;
+    } else {
+      navHtml = `<button class="btn btn-primary" onclick="showSummary()">결과 보기 →</button>`;
+    }
+  }
+
+  document.getElementById('quizArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-header">
+        <span class="q-num">문제 ${currentIdx + 1} / ${total}</span>
+        <span class="q-tag">${q.tag}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">${optionsHtml}</div>
+      ${expHtml}
+    </div>`;
+  document.getElementById('navRow').innerHTML = navHtml;
+}
+
+function selectAnswer(i) {
+  if (answered[currentIdx] !== null) return;
+  answered[currentIdx] = i;
+  const q = currentQuestions[currentIdx];
+  if (i !== q.answer) wrongIndices.push(currentIdx);
+  renderQuestion();
+}
+
+function nextQ() {
+  currentIdx++;
+  renderQuestion();
+}
+
+function showSummary() {
+  document.getElementById('quizArea').innerHTML = '';
+  document.getElementById('navRow').innerHTML = '';
+  document.getElementById('progressBar').style.width = '100%';
+
+  const total = currentQuestions.length;
+  const correct = answered.filter((a, i) => a === currentQuestions[i].answer).length;
+  const wrong = total - correct;
+
+  const wrongListHtml = wrongIndices.length > 0
+    ? wrongIndices.map(wi => `<div class="wrong-item">Q${wi+1}. ${currentQuestions[wi].q}</div>`).join('')
+    : '<div class="wrong-item" style="color:#639922;">오답이 없습니다! 완벽합니다 🎉</div>';
+
+  const retryBtn = wrongIndices.length > 0
+    ? `<button class="btn btn-danger" style="width:100%;margin-bottom:8px" onclick="retryWrong()">오답만 다시 풀기 (${wrongIndices.length}문제)</button>`
+    : '';
+
+  document.getElementById('summaryArea').classList.remove('hidden');
+  document.getElementById('summaryArea').innerHTML = `
+    <div class="summary-card">
+      <div class="summary-score">${correct} / ${total}</div>
+      <div class="summary-label">정답 수 (${Math.round(correct/total*100)}%)</div>
+      <div class="summary-grid">
+        <div class="summary-item"><div class="summary-item-num" style="color:#639922">${correct}</div><div class="summary-item-label">정답</div></div>
+        <div class="summary-item"><div class="summary-item-num" style="color:#E24B4A">${wrong}</div><div class="summary-item-label">오답</div></div>
+      </div>
+      <p class="section-title">오답 목록</p>
+      <div class="wrong-list">${wrongListHtml}</div>
+    </div>
+    <div class="nav-row" style="margin-top:1rem;flex-direction:column">
+      ${retryBtn}
+      <button class="btn btn-primary" style="width:100%" onclick="startQuiz(ALL_QUESTIONS)">처음부터 다시 풀기</button>
+    </div>`;
+}
+
+function retryWrong() {
+  const wrongQs = wrongIndices.map(i => currentQuestions[i]);
+  document.getElementById('summaryArea').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  startQuiz(wrongQs, true);
+}
+
+startQuiz(ALL_QUESTIONS);
+</script>
+</body>
+</html>

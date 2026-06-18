@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>당·고려 율령제도 퀴즈</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #0f0e0b;
+    --surface: #1a1814;
+    --surface2: #232018;
+    --border: #3a3428;
+    --gold: #c9a84c;
+    --gold-dim: #7a6330;
+    --gold-light: #e8c97a;
+    --text: #e8e0d0;
+    --text-dim: #8a8070;
+    --correct: #4a9c6f;
+    --correct-bg: #1a2e24;
+    --wrong: #c05050;
+    --wrong-bg: #2e1a1a;
+    --accent: #8fa8c8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* 헤더 */
+  .header {
+    background: linear-gradient(180deg, #1a1510 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--gold-dim);
+    padding: 36px 20px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 1px;
+  }
+  .header-sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* 진행 바 */
+  .progress-wrap {
+    max-width: 720px;
+    margin: 28px auto 0;
+    padding: 0 20px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* 점수판 */
+  .score-board {
+    max-width: 720px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+    display: flex;
+    gap: 12px;
+  }
+  .score-item {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .score-item .val {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .score-item .lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .score-item.correct .val { color: var(--correct); }
+  .score-item.wrong .val { color: var(--wrong); }
+  .score-item.remain .val { color: var(--gold); }
+
+  /* 문제 카드 */
+  .quiz-container {
+    max-width: 720px;
+    margin: 28px auto 0;
+    padding: 0 20px;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-number {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+    margin-bottom: 14px;
+  }
+  .q-text {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 22px;
+  }
+  .q-text strong { color: var(--gold-light); }
+
+  /* 선택지 */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.6;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--gold-dim);
+    background: #2a2520;
+  }
+  .option-label {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+  }
+  .option-btn:hover:not(:disabled) .option-label {
+    background: var(--gold-dim);
+    color: var(--bg);
+  }
+  .option-btn.selected-correct {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+  }
+  .option-btn.selected-correct .option-label {
+    background: var(--correct);
+    color: #fff;
+  }
+  .option-btn.selected-wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+  }
+  .option-btn.selected-wrong .option-label {
+    background: var(--wrong);
+    color: #fff;
+  }
+  .option-btn.reveal-correct {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+    opacity: 0.7;
+  }
+  .option-btn.reveal-correct .option-label {
+    background: var(--correct);
+    color: #fff;
+  }
+  .option-btn:disabled { cursor: default; }
+
+  /* 해설 */
+  .explanation {
+    margin-top: 18px;
+    background: #161410;
+    border-left: 3px solid var(--gold-dim);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 20px;
+    animation: slideIn 0.3s ease;
+    display: none;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .explanation.visible { display: block; }
+  .exp-header {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    margin-bottom: 10px;
+  }
+  .exp-result {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .exp-result.correct { color: var(--correct); }
+  .exp-result.wrong { color: var(--wrong); }
+  .exp-body {
+    font-size: 13px;
+    line-height: 1.8;
+    color: #b0a898;
+  }
+  .exp-body strong { color: var(--gold-light); }
+  .exp-keyword {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .keyword-tag {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 3px 3px 0 0;
+    color: var(--gold-dim);
+  }
+
+  /* 네비게이션 */
+  .nav-area {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    padding: 10px 24px;
+    color: var(--gold);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--gold-dim); color: var(--bg); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn.primary {
+    background: var(--gold-dim);
+    color: var(--bg);
+  }
+  .nav-btn.primary:hover { background: var(--gold); }
+
+  /* 결과 화면 */
+  .result-screen {
+    display: none;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px;
+    animation: fadeIn 0.5s ease;
+  }
+  .result-screen.visible { display: block; }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+  }
+  .result-score-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    background: #1a1510;
+  }
+  .result-score-big {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .result-score-total {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .result-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .result-msg {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .result-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .result-stat {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .result-stat .sv { font-size: 22px; font-weight: 700; font-family: 'Noto Serif KR', serif; }
+  .result-stat .sl { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+  .result-stat.c .sv { color: var(--correct); }
+  .result-stat.w .sv { color: var(--wrong); }
+  .result-stat.r .sv { color: var(--gold); }
+  .result-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  /* 오답 모드 배너 */
+  .retry-banner {
+    display: none;
+    max-width: 720px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+  }
+  .retry-banner.visible { display: block; }
+  .retry-box {
+    background: #1a1510;
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--gold);
+  }
+
+  /* 완료 메시지 */
+  .all-correct-msg {
+    text-align: center;
+    padding: 40px;
+    color: var(--correct);
+    font-size: 16px;
+  }
+
+  /* 문제 번호 탭 */
+  .q-tabs {
+    max-width: 720px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .q-tab {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .q-tab.active { border-color: var(--gold); color: var(--gold); }
+  .q-tab.done-correct { background: var(--correct-bg); border-color: var(--correct); color: var(--correct); }
+  .q-tab.done-wrong { background: var(--wrong-bg); border-color: var(--wrong); color: var(--wrong); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">국가직 6급 · 한국문화사</div>
+  <div class="header-title">당·고려 율령제도 비교</div>
+  <div class="header-sub">4지 선다 퀴즈 · 총 12문항</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="progressText">1 / 12</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<div class="score-board">
+  <div class="score-item correct"><div class="val" id="scoreCorrect">0</div><div class="lbl">정답</div></div>
+  <div class="score-item wrong"><div class="val" id="scoreWrong">0</div><div class="lbl">오답</div></div>
+  <div class="score-item remain"><div class="val" id="scoreRemain">12</div><div class="lbl">남은 문항</div></div>
+</div>
+
+<div class="q-tabs" id="qTabs"></div>
+
+<div class="retry-banner" id="retryBanner">
+  <div class="retry-box">
+    <span>🔁 오답 복습 모드 — 틀린 문제만 다시 풀고 있습니다</span>
+    <span id="retryCount"></span>
+  </div>
+</div>
+
+<div class="quiz-container" id="quizContainer"></div>
+
+<div class="nav-area" id="navArea">
+  <button class="nav-btn" id="prevBtn" onclick="movePrev()" disabled>이전</button>
+  <button class="nav-btn primary" id="nextBtn" onclick="moveNext()" disabled>다음 문제</button>
+</div>
+
+<div class="result-screen" id="resultScreen">
+  <div class="result-card">
+    <div class="result-score-ring">
+      <div class="result-score-big" id="resultScore">0</div>
+      <div class="result-score-total">/ 12</div>
+    </div>
+    <div class="result-title" id="resultTitle">결과</div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div class="result-stats">
+      <div class="result-stat c"><div class="sv" id="rCorrect">0</div><div class="sl">정답</div></div>
+      <div class="result-stat w"><div class="sv" id="rWrong">0</div><div class="sl">오답</div></div>
+      <div class="result-stat r"><div class="sv" id="rPct">0%</div><div class="sl">정답률</div></div>
+    </div>
+    <div class="result-btns">
+      <button class="nav-btn" onclick="restartAll()">처음부터 다시</button>
+      <button class="nav-btn primary" id="retryWrongBtn" onclick="startRetry()">오답만 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const allQuestions = [
+  {
+    id: 1,
+    text: '당의 3성6부제에서 <strong>정책을 입안</strong>하는 역할을 담당한 기관은?',
+    options: ['문하성','중서성','상서성','이부'],
+    answer: 1,
+    exp: '<strong>중서성</strong>은 황제의 명령이나 정책 방향을 문서로 초안 작성하여 입안하는 역할을 담당하였다. 문하성은 이를 심의·비판하고, 상서성은 최종 집행을 맡았다. 이 3성의 분리는 권력 독점을 방지하기 위한 제도적 장치였다.',
+    keywords: ['중서성','입안','3성6부','권력 분산']
+  },
+  {
+    id: 2,
+    text: '당 3성6부제에서 <strong>상서성 아래 설치된 6부의 구성</strong>으로 옳은 것은?',
+    options: [
+      '이부·호부·예부·병부·형부·공부',
+      '중서부·호부·예부·병부·형부·공부',
+      '이부·호부·예부·병부·형부·토부',
+      '이부·재부·예부·병부·형부·공부'
+    ],
+    answer: 0,
+    exp: '상서성 아래 설치된 <strong>6부</strong>는 이부(인사)·호부(재정)·예부(의례·교육)·병부(군사)·형부(사법)·공부(토목·건설)로 구성되며, 각각 행정 실무를 분담하였다. 고려도 동일한 명칭의 6부를 채택하였다.',
+    keywords: ['6부','이부·호부·예부·병부·형부·공부','상서성']
+  },
+  {
+    id: 3,
+    text: '고려가 당의 3성6부제를 <strong>수용·정비</strong>한 시기와 배경으로 옳은 것은?',
+    options: [
+      '태조 때 훈요 10조를 반포하며 정비',
+      '광종 때 과거제 실시와 함께 정비',
+      '성종 때 최승로의 시무 28조를 수용하며 정비',
+      '현종 때 거란의 침입 이후 정비'
+    ],
+    answer: 2,
+    exp: '고려의 중앙 정치체제는 <strong>성종 때 최승로가 올린 시무 28조</strong>를 수용하면서 본격적으로 정비되었다. 최승로는 유교 이념에 입각한 중앙집권적 국가 운영을 건의하였고, 성종은 이를 바탕으로 2성6부를 중심으로 한 관료제를 확립하였다.',
+    keywords: ['성종','최승로','시무 28조','2성6부']
+  },
+  {
+    id: 4,
+    text: '고려의 <strong>중서문하성</strong>이 당의 중서성·문하성과 다른 점으로 가장 적절한 것은?',
+    options: [
+      '중서문하성은 황제의 명령을 전달하는 역할만 담당하였다',
+      '중서성과 문하성을 통합하여 최고 정책 결정 기관으로 기능하였다',
+      '중서문하성은 군사 기밀만을 전담하는 기관이었다',
+      '중서문하성은 6부를 직접 통솔하는 집행 기관이었다'
+    ],
+    answer: 1,
+    exp: '고려는 당의 <strong>중서성(입안)과 문하성(심의)을 통합</strong>하여 중서문하성을 설치하고, 이를 최고 정책 결정 기관으로 운영하였다. 이로 인해 당과 달리 고려의 중서문하성에는 권한이 집중되었으며, 재신이 국정을 주도하는 귀족 정치의 특성이 나타났다.',
+    keywords: ['중서문하성','중서성+문하성 통합','최고 정책 결정']
+  },
+  {
+    id: 5,
+    text: '고려 중서문하성은 내부적으로 <strong>재신과 낭사</strong>로 구성되었다. 낭사의 기능으로 옳은 것은?',
+    options: [
+      '왕명 출납과 군사 기밀 담당',
+      '화폐·곡식 출납 등 재정 관리',
+      '관리의 부정 행위 감찰',
+      '간쟁·봉박을 통해 왕의 잘못된 명령 견제'
+    ],
+    answer: 3,
+    exp: '<strong>낭사</strong>는 중서문하성의 하위직으로, 왕이나 재신의 잘못된 결정에 대해 <strong>간쟁(직언)과 봉박(서명 거부)</strong>을 통해 견제하는 역할을 담당하였다. 이는 당의 제도에는 없던 고려만의 독자적 견제 장치로, 권력의 일방적 집중을 완화하는 기능을 하였다.',
+    keywords: ['낭사','간쟁','봉박','고려 독자 견제 장치']
+  },
+  {
+    id: 6,
+    text: '고려의 <strong>중추원</strong>이 담당한 기능으로 옳은 것은?',
+    options: [
+      '법제와 격식 제정',
+      '국방·외교 문제 합의 처리',
+      '왕명 출납과 군사 기밀 담당',
+      '관리 감찰 및 탄핵'
+    ],
+    answer: 2,
+    exp: '<strong>중추원</strong>은 왕명 출납과 군사 기밀을 담당한 기관으로, 중서문하성과 함께 고려 중앙 정치의 핵심 기관을 이루었다. 중추원의 고위직을 추밀이라 하였으며, 재신과 추밀이 함께 도병마사에 참여하여 국방·외교 현안을 합의 처리하였다.',
+    keywords: ['중추원','왕명 출납','군사 기밀','추밀']
+  },
+  {
+    id: 7,
+    text: '고려의 <strong>도병마사</strong>에 대한 설명으로 옳은 것은?',
+    options: [
+      '당의 상서성을 본따 만든 집행 기관이다',
+      '재신과 추밀이 모여 국방·외교를 합의 처리하는 고려 독자 기관이다',
+      '관리를 감찰하고 탄핵하는 기능을 담당하였다',
+      '화폐와 곡식의 출납을 관리하는 재정 기관이다'
+    ],
+    answer: 1,
+    exp: '<strong>도병마사</strong>는 중서문하성의 재신과 중추원의 추밀이 함께 모여 국방·외교 문제를 합의하여 처리한 고려만의 독자적 기관이다. 당에는 존재하지 않는 기구로, 중요 국사를 귀족 합의로 처리하는 고려 정치의 특성을 잘 보여준다. 후에 도평의사사로 개편되었다.',
+    keywords: ['도병마사','재신+추밀','국방·외교','고려 독자 기관']
+  },
+  {
+    id: 8,
+    text: '고려의 <strong>식목도감</strong>이 담당한 기능으로 옳은 것은?',
+    options: [
+      '군사 훈련과 무기 관리',
+      '국방·외교 현안 합의 처리',
+      '법제와 격식을 제정하는 고려 독자 기관',
+      '토지 분배와 전시과 운영'
+    ],
+    answer: 2,
+    exp: '<strong>식목도감</strong>은 고려의 법제와 격식을 제정하는 기관으로, 도병마사와 함께 고려만의 독자적인 합의 기구였다. 당의 제도에는 없는 기관이며, 재신과 추밀이 참여하여 법령과 제도적 규범을 협의·결정하였다는 점에서 고려 귀족 합의 정치의 특성을 반영한다.',
+    keywords: ['식목도감','법제·격식 제정','고려 독자','귀족 합의']
+  },
+  {
+    id: 9,
+    text: '고려의 <strong>어사대</strong>가 담당한 기능으로 옳은 것은?',
+    options: [
+      '왕명 출납과 군사 기밀',
+      '법제와 격식 제정',
+      '관리의 비행과 부정 감찰',
+      '재정(화폐·곡식 출납) 관리'
+    ],
+    answer: 2,
+    exp: '<strong>어사대</strong>는 관리의 비행·부정을 감찰하고 탄핵하는 기관으로, 고려 중앙 행정의 견제 기능을 담당하였다. 낭사(중서문하성)와 함께 대간(臺諫)을 구성하여 언론·감찰 기능을 수행하였으며, 이는 고려 관료제의 자기 정화 장치로 작동하였다.',
+    keywords: ['어사대','관리 감찰','대간','언론 기능']
+  },
+  {
+    id: 10,
+    text: '당의 3성6부제와 고려의 2성6부제를 비교할 때, <strong>고려 제도의 특징</strong>으로 가장 적절한 것은?',
+    options: [
+      '당보다 황제(왕)의 권한이 더 강화된 제도였다',
+      '3성을 독립시켜 권력 분산을 당보다 철저히 실현하였다',
+      '중서문하성에 권한을 집중시켜 재신 중심의 귀족 합의 정치가 나타났다',
+      '상서성을 폐지하고 6부를 왕이 직접 통솔하는 구조였다'
+    ],
+    answer: 2,
+    exp: '고려는 당의 3성 중 <strong>중서성과 문하성을 통합하여 중서문하성</strong>에 권한을 집중시켰다. 이로 인해 중서문하성의 고위직인 재신이 국정을 주도하는 <strong>귀족 중심의 합의 정치체제</strong>가 형성되었다. 이는 황제권 강화를 위한 당의 3성 분리 원칙과는 본질적으로 다른 운영 방식이었다.',
+    keywords: ['중서문하성 권한 집중','재신','귀족 합의 정치','당↔고려 차이']
+  },
+  {
+    id: 11,
+    text: '다음 중 고려의 <strong>중앙 정치기구와 그 기능의 연결</strong>이 옳지 않은 것은?',
+    options: [
+      '중서문하성 — 최고 정책 결정 기관',
+      '중추원 — 왕명 출납·군사 기밀',
+      '도병마사 — 법제·격식 제정',
+      '어사대 — 관리 감찰'
+    ],
+    answer: 2,
+    exp: '<strong>도병마사</strong>는 국방·외교 문제를 처리하는 기관이고, <strong>법제·격식을 제정</strong>하는 기관은 <strong>식목도감</strong>이다. 두 기관은 모두 고려만의 독자적 합의 기구이지만 기능이 다르므로 혼동하지 않도록 주의해야 한다.',
+    keywords: ['도병마사','식목도감','기능 구분','고려 독자 기관']
+  },
+  {
+    id: 12,
+    text: '고려 중앙 정치제도의 역사적 의의를 서술할 때 핵심 내용으로 <strong>가장 적절한 것</strong>은?',
+    options: [
+      '당 율령체제를 그대로 이식하여 중국식 황제 중심 관료제를 완성하였다',
+      '당 율령체제를 수용하면서도 문벌귀족의 이해를 반영한 귀족 합의 정치체제로 발전하였다',
+      '고려는 당의 제도를 완전히 거부하고 독자적인 관료제를 구축하였다',
+      '도병마사·식목도감을 통해 왕권이 강화되고 신권이 약화되었다'
+    ],
+    answer: 1,
+    exp: '고려의 중앙 정치제도는 <strong>당 율령체제를 선택적으로 수용</strong>하면서도 고려의 지배층인 <strong>문벌귀족의 이해관계를 반영</strong>하였다. 그 결과 재신 중심의 귀족 합의 정치체제로 완성되었다는 점이 역사적 의의이다. 이는 단순한 제도 이식이 아니라 고려 사회의 현실에 맞게 변형·발전시킨 결과였다.',
+    keywords: ['당 율령체제 수용','문벌귀족','귀족 합의 정치체제','역사적 의의']
+  }
+];
+
+// 상태
+let currentQuestions = [...allQuestions];
+let currentIdx = 0;
+let userAnswers = {}; // id: {selected, correct}
+let isRetryMode = false;
+let retryIds = [];
+let answered = {};
+
+function init() {
+  currentIdx = 0;
+  userAnswers = {};
+  answered = {};
+  isRetryMode = false;
+  document.getElementById('retryBanner').classList.remove('visible');
+  document.getElementById('resultScreen').classList.remove('visible');
+  document.getElementById('quizContainer').style.display = '';
+  document.getElementById('navArea').style.display = '';
+  document.getElementById('qTabs').style.display = '';
+  buildTabs();
+  renderQuestion();
+  updateScoreBoard();
+}
+
+function buildTabs() {
+  const wrap = document.getElementById('qTabs');
+  wrap.innerHTML = '';
+  currentQuestions.forEach((q, i) => {
+    const t = document.createElement('div');
+    t.className = 'q-tab' + (i === currentIdx ? ' active' : '');
+    t.textContent = i + 1;
+    t.onclick = () => { currentIdx = i; renderQuestion(); };
+    wrap.appendChild(t);
+  });
+}
+
+function updateTabs() {
+  const tabs = document.querySelectorAll('.q-tab');
+  tabs.forEach((t, i) => {
+    t.className = 'q-tab';
+    const q = currentQuestions[i];
+    if (answered[q.id] !== undefined) {
+      t.classList.add(answered[q.id] ? 'done-correct' : 'done-wrong');
+    }
+    if (i === currentIdx) t.classList.add('active');
+  });
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentIdx];
+  const isAnswered = answered[q.id] !== undefined;
+
+  let html = `
+    <div class="question-card">
+      <div class="q-number">문제 ${currentIdx + 1} / ${currentQuestions.length}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options">`;
+
+  const labels = ['①','②','③','④'];
+  q.options.forEach((opt, i) => {
+    let cls = 'option-btn';
+    if (isAnswered) {
+      const sel = userAnswers[q.id].selected;
+      if (i === q.answer) cls += ' reveal-correct';
+      if (i === sel && sel === q.answer) cls = 'option-btn selected-correct';
+      if (i === sel && sel !== q.answer) cls += ' selected-wrong';
+    }
+    html += `<button class="${cls}" ${isAnswered ? 'disabled' : ''} onclick="selectAnswer(${q.id}, ${i})">
+      <span class="option-label">${labels[i]}</span><span>${opt}</span>
+    </button>`;
+  });
+
+  html += `</div>`;
+
+  // 해설
+  if (isAnswered) {
+    const isCorrect = userAnswers[q.id].correct;
+    const kwHtml = q.keywords.map(k => `<span class="keyword-tag">${k}</span>`).join('');
+    html += `
+      <div class="explanation visible">
+        <div class="exp-header">▎ 해 설</div>
+        <div class="exp-result ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✔ 정답입니다!' : '✗ 오답입니다'}</div>
+        <div class="exp-body">${q.exp}</div>
+        <div class="exp-keyword">📌 핵심 키워드 &nbsp; ${kwHtml}</div>
+      </div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('quizContainer').innerHTML = html;
+
+  // 네비 버튼
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  prevBtn.disabled = currentIdx === 0;
+
+  if (currentIdx === currentQuestions.length - 1) {
+    const allDone = currentQuestions.every(q => answered[q.id] !== undefined);
+    nextBtn.textContent = allDone ? '결과 보기' : '다음 문제';
+    nextBtn.disabled = !isAnswered;
+    if (allDone) nextBtn.disabled = false;
+  } else {
+    nextBtn.textContent = '다음 문제';
+    nextBtn.disabled = !isAnswered;
+  }
+
+  updateProgress();
+  updateTabs();
+  updateScoreBoard();
+}
+
+function selectAnswer(qId, selected) {
+  if (answered[qId] !== undefined) return;
+  const q = currentQuestions.find(x => x.id === qId);
+  const correct = selected === q.answer;
+  answered[qId] = correct;
+  userAnswers[qId] = { selected, correct };
+  renderQuestion();
+}
+
+function movePrev() {
+  if (currentIdx > 0) { currentIdx--; renderQuestion(); }
+}
+
+function moveNext() {
+  const allDone = currentQuestions.every(q => answered[q.id] !== undefined);
+  if (currentIdx === currentQuestions.length - 1 && allDone) {
+    showResult(); return;
+  }
+  if (currentIdx < currentQuestions.length - 1) { currentIdx++; renderQuestion(); }
+}
+
+function updateProgress() {
+  const done = Object.keys(answered).length;
+  const total = currentQuestions.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressText').textContent = `${currentIdx + 1} / ${total}`;
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function updateScoreBoard() {
+  const correctCount = Object.values(answered).filter(v => v).length;
+  const wrongCount = Object.values(answered).filter(v => !v).length;
+  const remain = currentQuestions.length - Object.keys(answered).length;
+  document.getElementById('scoreCorrect').textContent = correctCount;
+  document.getElementById('scoreWrong').textContent = wrongCount;
+  document.getElementById('scoreRemain').textContent = remain;
+}
+
+function showResult() {
+  const correctCount = Object.values(answered).filter(v => v).length;
+  const total = currentQuestions.length;
+  const pct = Math.round((correctCount / total) * 100);
+
+  document.getElementById('resultScreen').classList.add('visible');
+  document.getElementById('quizContainer').style.display = 'none';
+  document.getElementById('navArea').style.display = 'none';
+  document.getElementById('qTabs').style.display = 'none';
+
+  document.getElementById('resultScore').textContent = correctCount;
+  document.getElementById('rCorrect').textContent = correctCount;
+  document.getElementById('rWrong').textContent = total - correctCount;
+  document.getElementById('rPct').textContent = pct + '%';
+
+  let title, msg;
+  if (pct === 100) { title = '🏆 완벽한 이해!'; msg = '당·고려 율령제도를 완벽히 숙지하였습니다.\n모든 핵심 개념을 정확하게 파악하였습니다.'; }
+  else if (pct >= 80) { title = '✨ 우수한 이해!'; msg = '대부분의 내용을 정확히 알고 있습니다.\n오답 복습으로 부족한 부분을 보완해 보세요.'; }
+  else if (pct >= 60) { title = '📚 보완이 필요합니다'; msg = '기본 개념은 이해하고 있으나 세부 기능과\n당↔고려 차이점을 다시 확인해 보세요.'; }
+  else { title = '🔁 핵심 키워드 재학습 필요'; msg = '모범답안의 서술 구조와 필수 키워드를\n다시 꼼꼼히 정리해 보세요.'; }
+
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+
+  // 오답이 없으면 오답 버튼 비활성화
+  const wrongIds = currentQuestions.filter(q => answered[q.id] === false).map(q => q.id);
+  const retryBtn = document.getElementById('retryWrongBtn');
+  if (wrongIds.length === 0) {
+    retryBtn.disabled = true;
+    retryBtn.textContent = '오답 없음 🎉';
+  } else {
+    retryBtn.disabled = false;
+    retryBtn.textContent = `오답만 다시 풀기 (${wrongIds.length}문제)`;
+  }
+}
+
+function restartAll() {
+  currentQuestions = [...allQuestions];
+  init();
+}
+
+function startRetry() {
+  const wrongIds = currentQuestions.filter(q => answered[q.id] === false).map(q => q.id);
+  if (wrongIds.length === 0) return;
+  currentQuestions = allQuestions.filter(q => wrongIds.includes(q.id));
+  currentIdx = 0;
+  userAnswers = {};
+  answered = {};
+  isRetryMode = true;
+  document.getElementById('retryBanner').classList.add('visible');
+  document.getElementById('retryCount').textContent = `총 ${currentQuestions.length}문항`;
+  document.getElementById('resultScreen').classList.remove('visible');
+  document.getElementById('quizContainer').style.display = '';
+  document.getElementById('navArea').style.display = '';
+  document.getElementById('qTabs').style.display = '';
+  buildTabs();
+  renderQuestion();
+  updateScoreBoard();
+}
+
+// 시작
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>차티스트 운동 — 점검 퀴즈</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --line: #e2e0db;
+    --accent: #3a6ea5;
+    --accent-soft: #eaf1f8;
+    --correct: #2e7d56;
+    --correct-soft: #e8f5ee;
+    --wrong: #c0392b;
+    --wrong-soft: #fae9e7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .bar-track { height: 6px; background: var(--line); border-radius: 99px; margin: 18px 0 6px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+  }
+  .q-text { font-size: 1.08rem; font-weight: 600; margin-bottom: 18px; }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #fff;
+  }
+  .opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.correct { border-color: var(--correct); background: var(--correct-soft); }
+  .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { background: #fff; border-color: var(--line); }
+  .opt.disabled.correct:hover { background: var(--correct-soft); border-color: var(--correct); }
+  .opt.disabled.wrong:hover { background: var(--wrong-soft); border-color: var(--wrong); }
+  .opt-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 0.8rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .opt.selected .opt-num { background: var(--accent); color: #fff; }
+  .opt.correct .opt-num { background: var(--correct); color: #fff; }
+  .opt.wrong .opt-num { background: var(--wrong); color: #fff; }
+
+  .explain {
+    margin-top: 16px;
+    border-left: 3px solid var(--accent);
+    background: #fafafa;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 0.93rem;
+  }
+  .explain .verdict { font-weight: 700; margin-bottom: 6px; }
+  .explain .verdict.ok { color: var(--correct); }
+  .explain .verdict.no { color: var(--wrong); }
+  .explain .kw {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+    font-size: 0.88rem;
+  }
+  .explain .kw b { color: var(--accent); }
+
+  .btns { display: flex; gap: 10px; margin-top: 20px; }
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+  .btn-ghost { background: var(--line); color: var(--ink); }
+  button:hover:not(:disabled) { opacity: 0.88; }
+
+  /* result */
+  .result-head { text-align: center; padding: 8px 0 4px; }
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--accent); }
+  .score-sub { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+  .score-msg { margin-top: 12px; font-size: 0.95rem; }
+  .review-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-top: 10px;
+    background: #fff;
+  }
+  .ri-q { font-size: 0.92rem; font-weight: 600; }
+  .ri-tag {
+    float: right;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 99px;
+    margin-left: 8px;
+  }
+  .ri-tag.ok { color: var(--correct); background: var(--correct-soft); }
+  .ri-tag.no { color: var(--wrong); background: var(--wrong-soft); }
+  .ri-detail { font-size: 0.83rem; color: var(--muted); margin-top: 6px; }
+  .ri-detail b { color: var(--ink); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>차티스트 운동 — 점검 퀴즈</h1>
+    <div class="sub">모범답안 기반 15문항 · 정답 확인 시 해설·필수 키워드 표시</div>
+  </header>
+
+  <!-- QUIZ VIEW -->
+  <div id="quizView">
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="meta">
+      <span id="progressLabel">1 / 15</span>
+      <span id="roundLabel"></span>
+    </div>
+
+    <div class="card">
+      <span class="tag" id="qTag"></span>
+      <div class="q-text" id="qText"></div>
+      <div id="optList"></div>
+      <div id="explainBox"></div>
+      <div class="btns">
+        <button class="btn-primary" id="actionBtn">정답 확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT VIEW -->
+  <div id="resultView" class="hidden">
+    <div class="card">
+      <div class="result-head">
+        <div class="score-big" id="scoreBig">0 / 15</div>
+        <div class="score-sub" id="scoreSub"></div>
+        <div class="score-msg" id="scoreMsg"></div>
+      </div>
+      <div class="btns">
+        <button class="btn-primary" id="retryWrongBtn">오답만 다시 풀기</button>
+        <button class="btn-ghost" id="retryAllBtn">전체 다시 풀기</button>
+      </div>
+    </div>
+    <div id="reviewList"></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    tag: "개념 정의",
+    q: "차티스트 운동의 성격을 가장 정확하게 설명한 것은?",
+    options: [
+      "산업혁명 이후 성장한 노동계급이 정치적 권리를 요구한 영국 최초의 전국적 대중 정치운동",
+      "중산층 자본가가 자유무역을 요구한 경제 운동",
+      "농민이 토지 분배를 요구한 농촌 봉기",
+      "귀족이 왕권을 견제하기 위해 벌인 의회 개혁 운동"
+    ],
+    answer: 0,
+    exp: "차티스트 운동은 산업혁명 이후 성장한 노동계급이 정치적 권리를 요구하며 전개한 영국 최초의 전국적 대중 정치운동이다.",
+    kw: "노동계급 · 정치적 권리 · 영국 최초의 전국적 대중 정치운동"
+  },
+  {
+    tag: "배경",
+    q: "차티스트 운동의 직접적 배경이 된, 부패 선거구를 폐지하고 중산층에게 선거권을 확대한 개혁은?",
+    options: [
+      "1832년 제1차 선거법 개정",
+      "1838년 인민헌장 발표",
+      "1867년 제2차 선거법 개정",
+      "1884년 제3차 선거법 개정"
+    ],
+    answer: 0,
+    exp: "1832년 제1차 선거법 개정으로 부패 선거구가 폐지되고 중산층에게 선거권이 확대되었으나, 노동자 계층은 여전히 배제되었다.",
+    kw: "1832년 제1차 선거법 개정 · 부패 선거구 폐지 · 중산층 선거권 확대"
+  },
+  {
+    tag: "배경",
+    q: "1832년 제1차 선거법 개정의 결과로 옳은 것은?",
+    options: [
+      "부패 선거구가 폐지되고 중산층에게 선거권이 확대되었다",
+      "성인 남성 모두에게 보통선거가 보장되었다",
+      "여성에게도 선거권이 부여되었다",
+      "도시 노동자에게 선거권이 확대되었다"
+    ],
+    answer: 0,
+    exp: "1차 선거법 개정의 핵심은 부패 선거구 폐지와 중산층 선거권 확대다. 노동자·여성은 여전히 배제되었고, 도시 노동자 확대는 1867년 2차 개정의 일이다.",
+    kw: "부패 선거구 폐지 · 중산층 선거권 확대 · (노동자·여성 배제)"
+  },
+  {
+    tag: "배경",
+    q: "1차 선거법 개정 이후에도 선거권에서 배제되어 차티스트 운동의 주체가 된 계층은?",
+    options: [
+      "산업혁명의 주역이었던 노동자 계층",
+      "신흥 산업 자본가",
+      "토지 귀족",
+      "성직자"
+    ],
+    answer: 0,
+    exp: "산업혁명의 주역이었던 노동자 계층은 1차 선거법 개정에서도 선거권에서 배제되어, 정치 개혁 없이는 사회 문제 해결이 어렵다고 인식했다.",
+    kw: "노동자 계층 · 선거권 배제 · 정치적 소외"
+  },
+  {
+    tag: "전개",
+    q: "차티스트 운동을 주도하며 1838년 인민헌장 발표의 중심이 된 조직은?",
+    options: [
+      "런던노동자협회(LWMA)",
+      "동인도회사",
+      "곡물법 반대 동맹",
+      "페이비언 협회"
+    ],
+    answer: 0,
+    exp: "노동자 계층은 런던노동자협회(LWMA)를 중심으로 1838년 인민헌장(People's Charter)을 발표하였다.",
+    kw: "런던노동자협회(LWMA) · 인민헌장 발표 중심"
+  },
+  {
+    tag: "전개",
+    q: "차티스트들의 요구를 집약한 '인민헌장(People's Charter)'이 발표된 연도는?",
+    options: [
+      "1838년",
+      "1832년",
+      "1848년",
+      "1867년"
+    ],
+    answer: 0,
+    exp: "인민헌장은 1838년에 발표되었다. 1832년(1차 선거법)·1867년(2차 선거법)과 혼동하지 않도록 발표 연도를 정확히 암기해야 한다.",
+    kw: "1838년 인민헌장(People's Charter)"
+  },
+  {
+    tag: "전개 (6대 요구)",
+    q: "인민헌장의 '6대 요구'에 포함되지 않는 것은?",
+    options: [
+      "공장 국유화",
+      "성인 남성 보통선거",
+      "비밀투표제",
+      "의원 세비 지급"
+    ],
+    answer: 0,
+    exp: "6대 요구는 ①성인 남성 보통선거 ②비밀투표제 ③의원 재산 자격 제한 폐지 ④의원 세비 지급 ⑤평등 선거구제 ⑥매년 의회 소집이다. '공장 국유화'는 포함되지 않는 함정 선지다.",
+    kw: "6대 요구: 보통선거·비밀투표·재산자격 폐지·세비 지급·평등 선거구·매년 의회 소집"
+  },
+  {
+    tag: "전개 (6대 요구)",
+    q: "인민헌장 6대 요구 중 선거권 확대와 관련된 항목으로 옳은 것은?",
+    options: [
+      "성인 남성 보통선거",
+      "성인 남녀 보통선거",
+      "재산 소유자 제한 선거",
+      "납세액 비례 선거"
+    ],
+    answer: 0,
+    exp: "6대 요구의 선거권 항목은 '성인 남성 보통선거'다. 여성은 포함되지 않았다는 점이 차티스트 운동의 한계(여성 참정권 배제)와 직결된다.",
+    kw: "성인 남성 보통선거 · (여성 배제)"
+  },
+  {
+    tag: "전개",
+    q: "차티스트들이 6대 요구를 관철하기 위해 사용한 주요 운동 방식은?",
+    options: [
+      "전국적 집회와 대규모 서명 운동을 통한 의회 청원서 반복 제출",
+      "무장봉기를 통한 정부 전복",
+      "공장 점거와 총파업",
+      "왕실에 대한 직접 탄원"
+    ],
+    answer: 0,
+    exp: "차티스트들은 전국적 집회와 대규모 서명 운동을 전개하며 의회에 청원서를 반복 제출하였다.",
+    kw: "전국 집회 · 대규모 서명 · 의회 청원서 반복 제출"
+  },
+  {
+    tag: "전개 (결과)",
+    q: "차티스트 운동의 당대 결과로 옳은 것은?",
+    options: [
+      "정부와 의회의 거부 및 탄압으로 당대에는 뜻을 이루지 못했다",
+      "청원이 즉시 수용되어 보통선거가 도입되었다",
+      "왕이 6대 요구를 모두 승인하였다",
+      "노동당이 집권하는 계기가 되었다"
+    ],
+    answer: 0,
+    exp: "차티스트의 청원은 정부와 의회의 거부 및 탄압으로 당대에는 뜻을 이루지 못했다. 다만 '즉각적 실패'가 '역사적 실패'를 의미하지는 않는다.",
+    kw: "정부·의회 거부·탄압 · 당대 좌절 · (즉각적 실패 ≠ 역사적 실패)"
+  },
+  {
+    tag: "한계",
+    q: "차티스트 지도부 내에서 나타난 노선 갈등을 가리키는 표현은?",
+    options: [
+      "도덕파와 물리력파의 노선 갈등",
+      "온건파와 급진파의 종교 갈등",
+      "보수파와 자유파의 무역 갈등",
+      "왕당파와 공화파의 체제 갈등"
+    ],
+    answer: 0,
+    exp: "차티스트 운동은 지도부 내 도덕파와 물리력파의 노선 갈등을 안고 있었다.",
+    kw: "도덕파 vs 물리력파 노선 갈등"
+  },
+  {
+    tag: "한계",
+    q: "차티스트 운동이 '노동계급 중심의 제한된 운동'이라 평가받는 한계로 옳지 않은 것은?",
+    options: [
+      "성인 남녀 모두에게 즉각 선거권을 부여하는 데 성공했다",
+      "도덕파와 물리력파의 노선 갈등이 있었다",
+      "계급 간 연대가 부족했다",
+      "여성 참정권이 배제되었다"
+    ],
+    answer: 0,
+    exp: "한계는 도덕파·물리력파 노선 갈등, 계급 간 연대 부족, 여성 참정권 배제다. '남녀 모두에게 선거권 부여 성공'은 사실과 반대되는 선지다.",
+    kw: "노선 갈등 · 계급 연대 부족 · 여성 참정권 배제"
+  },
+  {
+    tag: "장기 영향",
+    q: "차티스트 운동의 장기적 영향으로, 도시 노동자에게 선거권을 확대한 개혁은?",
+    options: [
+      "1867년 제2차 선거법 개정",
+      "1832년 제1차 선거법 개정",
+      "1838년 인민헌장",
+      "1884년 제3차 선거법 개정"
+    ],
+    answer: 0,
+    exp: "지속적 의회 압박을 통해 1867년 제2차 선거법 개정으로 도시 노동자에게 선거권이 확대되었다.",
+    kw: "1867년 제2차 선거법 · 도시 노동자 선거권 확대"
+  },
+  {
+    tag: "장기 영향",
+    q: "농촌 노동자에게까지 선거권이 확대된 개혁의 연도는?",
+    options: [
+      "1884년 (제3차 선거법 개정)",
+      "1867년 (제2차 선거법 개정)",
+      "1848년",
+      "1832년 (제1차 선거법 개정)"
+    ],
+    answer: 0,
+    exp: "1884년 제3차 선거법 개정으로 농촌 노동자에게까지 선거권이 단계적으로 확대되었다. 1867년(도시 노동자)과 구분해 암기해야 한다.",
+    kw: "1884년 제3차 선거법 · 농촌 노동자 · 선거권 단계적 확대"
+  },
+  {
+    tag: "역사적 의의",
+    q: "차티스트 운동의 역사적 의의를 두 측면으로 가장 잘 정리한 것은?",
+    options: [
+      "민주주의 발전의 기반 마련 + 점진적·의회주의적 민주주의 전통 확립",
+      "절대왕정 강화 + 중상주의 정착",
+      "식민지 확대 + 자유무역 체제 수립",
+      "교회 권력 강화 + 신분제 부활"
+    ],
+    answer: 0,
+    exp: "차티스트 운동은 노동계급이 조직적으로 정치 참여를 요구하며 민주주의 발전의 기반을 마련했고, 폭력 혁명이 아닌 청원·의회 개혁 중심 운동으로 영국 특유의 점진적·의회주의적 민주주의 전통 확립에 기여했다. 의의는 반드시 이 두 측면으로 마무리한다.",
+    kw: "민주주의 발전 기반 + 점진적·의회주의적 민주주의 전통"
+  }
+];
+
+const $ = (id) => document.getElementById(id);
+let order = QUESTIONS.map((_, i) => i); // 현재 라운드에서 풀 문항 인덱스
+let pos = 0;                            // order 내 위치
+let confirmed = false;
+let results = {};                       // qi -> {correct, picked}
+let isRetryRound = false;
+
+function startRound(indices, retry) {
+  order = indices.slice();
+  pos = 0;
+  confirmed = false;
+  isRetryRound = retry;
+  if (!retry) results = {};
+  $("resultView").classList.add("hidden");
+  $("quizView").classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  confirmed = false;
+  const qi = order[pos];
+  const Q = QUESTIONS[qi];
+
+  $("barFill").style.width = ((pos) / order.length * 100) + "%";
+  $("progressLabel").textContent = (pos + 1) + " / " + order.length;
+  $("roundLabel").textContent = isRetryRound ? "오답 복습 라운드" : "";
+
+  $("qTag").textContent = Q.tag;
+  $("qText").textContent = (qi + 1) + ". " + Q.q;
+
+  const list = $("optList");
+  list.innerHTML = "";
+  Q.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.dataset.idx = i;
+    div.innerHTML = '<span class="opt-num">' + (i + 1) + '</span><span>' + opt + '</span>';
+    div.onclick = () => selectOption(div, i);
+    list.appendChild(div);
+  });
+
+  $("explainBox").innerHTML = "";
+  const btn = $("actionBtn");
+  btn.textContent = "정답 확인";
+  btn.disabled = true;
+}
+
+let picked = null;
+function selectOption(div, i) {
+  if (confirmed) return;
+  picked = i;
+  document.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
+  div.classList.add("selected");
+  $("actionBtn").disabled = false;
+}
+
+function confirmAnswer() {
+  const qi = order[pos];
+  const Q = QUESTIONS[qi];
+  confirmed = true;
+  const correct = picked === Q.answer;
+  results[qi] = { correct, picked };
+
+  document.querySelectorAll(".opt").forEach((o) => {
+    const idx = parseInt(o.dataset.idx);
+    o.classList.add("disabled");
+    o.classList.remove("selected");
+    if (idx === Q.answer) o.classList.add("correct");
+    else if (idx === picked) o.classList.add("wrong");
+  });
+
+  // 해설 즉시 표시
+  const exp = $("explainBox");
+  exp.innerHTML =
+    '<div class="explain">' +
+      '<div class="verdict ' + (correct ? "ok" : "no") + '">' +
+        (correct ? "✅ 정답입니다" : "❌ 오답입니다 (정답: " + (Q.answer + 1) + "번)") +
+      '</div>' +
+      '<div>' + Q.exp + '</div>' +
+      '<div class="kw">📌 답안 필수 키워드 — <b>' + Q.kw + '</b></div>' +
+    '</div>';
+
+  const btn = $("actionBtn");
+  btn.disabled = false;
+  btn.textContent = (pos === order.length - 1) ? "결과 보기" : "다음 문제";
+}
+
+$("actionBtn").addEventListener("click", () => {
+  if (!confirmed) {
+    confirmAnswer();
+  } else {
+    picked = null;
+    if (pos === order.length - 1) {
+      showResult();
+    } else {
+      pos++;
+      renderQuestion();
+    }
+  }
+});
+
+function showResult() {
+  $("quizView").classList.add("hidden");
+  $("resultView").classList.remove("hidden");
+  $("barFill").style.width = "100%";
+
+  const answeredIdx = Object.keys(results).map(Number).sort((a, b) => a - b);
+  const total = answeredIdx.length;
+  const score = answeredIdx.filter(qi => results[qi].correct).length;
+  const wrongIdx = answeredIdx.filter(qi => !results[qi].correct);
+
+  $("scoreBig").textContent = score + " / " + total;
+  const pct = Math.round(score / total * 100);
+  $("scoreSub").textContent = "정답률 " + pct + "%";
+
+  let msg;
+  if (wrongIdx.length === 0) msg = "전 문항 정답 — 놓친 키워드가 없습니다 👍";
+  else msg = "틀린 " + wrongIdx.length + "문항의 키워드를 다시 확인하세요.";
+  $("scoreMsg").textContent = msg;
+
+  const retryWrong = $("retryWrongBtn");
+  if (wrongIdx.length > 0) {
+    retryWrong.classList.remove("hidden");
+    retryWrong.onclick = () => startRound(wrongIdx, true);
+  } else {
+    retryWrong.classList.add("hidden");
+  }
+  $("retryAllBtn").onclick = () => startRound(QUESTIONS.map((_, i) => i), false);
+
+  const list = $("reviewList");
+  list.innerHTML = "";
+  answeredIdx.forEach(qi => {
+    const Q = QUESTIONS[qi];
+    const r = results[qi];
+    const ok = r && r.correct;
+    const item = document.createElement("div");
+    item.className = "review-item";
+    item.innerHTML =
+      '<div class="ri-q">' + (qi + 1) + '. ' + Q.q +
+      '<span class="ri-tag ' + (ok ? "ok" : "no") + '">' + (ok ? "정답" : "오답") + '</span></div>' +
+      '<div class="ri-detail">정답: ' + (Q.answer + 1) + '번 · 필수 키워드 <b>' + Q.kw + '</b></div>';
+    list.appendChild(item);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
