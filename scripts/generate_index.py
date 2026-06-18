@@ -25,7 +25,7 @@ template = f"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K-Quiz 모음</title>
+<title>W-Quiz 모음</title>
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2.5rem 1rem; }}
@@ -54,7 +54,7 @@ template = f"""<!DOCTYPE html>
 <body>
 <div class="container">
   <header>
-    <h1>K-Quiz 모음</h1>
+    <h1>W-Quiz 모음</h1>
     <p>학예사 시험 준비 — 분야별 점검 퀴즈 목록</p>
   </header>
   <div class="quiz-list">
