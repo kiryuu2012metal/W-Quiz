@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그리스 폴리스·민주정치 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>그리스 폴리스 · 민주정치 핵심 퀴즈</h1>
+    <p>클레이스테네스·페리클레스·폴리스 구조·아테네 스파르타 비교 — 4지선다 10문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 10 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 10</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "클레이스테네스가 참주의 출현을 예방하기 위해 도입한 제도로, 6천 표 이상을 얻은 인물을 10년간 국외로 추방한 제도는?",
+    opts: ["도편추방제","수당제(미스토포리아)","추첨제","호민관 제도"],
+    ans: 0,
+    exp: "<strong>도편추방제(오스트라키스모스)</strong>는 클레이스테네스가 도입한 제도로, 참주가 될 가능성이 있는 인물을 시민 투표(6천 표 이상)로 10년간 국외 추방함으로써 독재의 출현을 예방하였습니다. 수당제는 페리클레스의 업적이므로 혼동하지 않도록 주의해야 합니다.",
+    keywords: ["도편추방제","클레이스테네스","오스트라키스모스","6천표"]
+  },
+  {
+    q: "클레이스테네스가 귀족의 인적 기반을 약화시키기 위해 단행한 부족제 개편의 방향으로 옳은 것은?",
+    opts: ["혈연 중심 4부족제 → 지역 기반 10부족제","지역 기반 부족제 → 혈연 중심 부족제","신분제 폐지 → 재산 등급제 도입","군사동맹 기반의 새로운 부족제 신설"],
+    ans: 0,
+    exp: "클레이스테네스는 <strong>혈연 중심의 4부족제를 지역 기반 10부족제로 개편</strong>하여 귀족의 인적 기반을 약화시켰습니다. 이를 토대로 10부족에서 각 50명씩 추첨으로 선출된 500인 평의회가 설치되었습니다. 재산 등급제 도입은 솔론의 개혁임을 구분해야 합니다.",
+    keywords: ["10부족제","지역기반","클레이스테네스","500인평의회"]
+  },
+  {
+    q: "페리클레스 시대에 도입되어 경제적으로 빈곤한 시민도 정치에 전념할 수 있도록 한 제도는?",
+    opts: ["수당제(미스토포리아)","도편추방제","금권정치","호민관 제도"],
+    ans: 0,
+    exp: "<strong>수당제(미스토포리아)</strong>는 페리클레스가 공직과 배심원직에 수당을 지급한 제도로, 재산이 없는 시민도 생업을 잠시 미루고 정치에 참여할 수 있게 한 경제적 토대였습니다. 도편추방제는 클레이스테네스의 업적이므로 인물을 혼동하지 않아야 합니다.",
+    keywords: ["수당제","미스토포리아","페리클레스","무산자참여"]
+  },
+  {
+    q: "페리클레스 시대 아테네에서 장군 등 일부 특수직을 제외한 대부분의 관직과 배심원을 선출한 방식은?",
+    opts: ["추첨제","세습제","선거제","임명제"],
+    ans: 0,
+    exp: "페리클레스는 장군 등 특수직을 제외한 대부분의 관직과 시민법정(헬리아이아) 배심원을 <strong>추첨제</strong>로 선출하고 임기를 제한함으로써 권력 집중을 방지하였습니다. 이는 재산이나 신분에 관계없이 모든 시민에게 공직 참여 기회를 부여한 것입니다.",
+    keywords: ["추첨제","임기제","헬리아이아","페리클레스"]
+  },
+  {
+    q: "아테네에 거주하며 상공업에 종사하였으나 시민권은 부여받지 못했던 거류 외국인을 가리키는 명칭은?",
+    opts: ["메토이코이","헬로트","페리오이코이","스파르티아테스"],
+    ans: 0,
+    exp: "<strong>메토이코이</strong>는 아테네에 거주하던 거류 외국인으로, 자유민이었으나 시민권은 인정받지 못해 정치 참여에서 배제되었습니다. 헬로트와 페리오이코이는 스파르타의 신분으로, 아테네의 메토이코이와 혼동하지 않도록 주의해야 합니다.",
+    keywords: ["메토이코이","거류외국인","시민권배제","아테네"]
+  },
+  {
+    q: "아테네 민주정치가 제국주의적 성격을 띠게 된 배경으로 가장 적절한 것은?",
+    opts: ["델로스 동맹 가맹국에 대한 공물 징수","펠로폰네소스 동맹 결성","스파르타와의 군사 동맹 체결","메토이코이에 대한 특별세 부과"],
+    ans: 0,
+    exp: "아테네의 번영은 <strong>델로스 동맹 가맹국으로부터 거둔 공물</strong>에 크게 의존하였으며, 이는 동맹국에 대한 내정 간섭으로 이어져 사실상 제국주의적 지배의 성격을 띠었습니다. 펠로폰네소스 동맹은 스파르타가 주도한 동맹이므로 구분해야 합니다.",
+    keywords: ["델로스동맹","공물","제국주의적성격","아테네"]
+  },
+  {
+    q: "폴리스에서 시민들이 모여 민회를 열고 정치를 토론하는 동시에 상업적 거래도 이루어졌던 공간은?",
+    opts: ["아고라","아크로폴리스","콜로세움","파르테논 신전"],
+    ans: 0,
+    exp: "<strong>아고라</strong>는 폴리스의 광장으로, 시민들이 모여 민회를 열고 정치적 사안을 토론하는 공론의 장이자 교역의 중심지로 기능하였습니다. 아크로폴리스는 신전·방어 기능을 담당한 공간이므로 기능을 뒤바꿔 서술하지 않도록 주의해야 합니다.",
+    keywords: ["아고라","광장","민회","상거래"]
+  },
+  {
+    q: "폴리스의 중심 언덕에 위치하여 수호신을 모시는 신전이 세워졌으며 군사적 방어 거점의 역할도 겸한 공간은?",
+    opts: ["아크로폴리스","아고라","헬리아이아","프닉스"],
+    ans: 0,
+    exp: "<strong>아크로폴리스</strong>는 폴리스 중심 언덕에 위치하여 수호신을 모시는 신전이 세워졌으며, 외적 침입에 대비한 방어 거점의 역할도 겸하였습니다. 아테네의 파르테논 신전이 위치한 곳이 바로 아크로폴리스입니다.",
+    keywords: ["아크로폴리스","신전","방어거점","파르테논"]
+  },
+  {
+    q: "스파르타에서 다수의 예속 농민으로서 일정량의 수확물을 바쳐야 했고 투표권이 없었던 신분은?",
+    opts: ["헬로트","페리오이코이","메토이코이","스파르티아테스"],
+    ans: 0,
+    exp: "<strong>헬로트</strong>는 스파르타의 예속 농민으로, 정복당한 원주민 출신이며 투표권 없이 농사를 지어 일정량의 수확물을 바쳐야 했습니다. 페리오이코이는 투표권 없는 반자유민으로 상공업에 종사하였다는 점에서 헬로트와 구분됩니다.",
+    keywords: ["헬로트","예속농민","스파르타","투표권없음"]
+  },
+  {
+    q: "아테네와 스파르타의 정치체제 차이에 대한 설명으로 옳은 것은?",
+    opts: [
+      "아테네는 직접민주정, 스파르타는 소수 지배계급 중심의 군국주의 체제였다",
+      "아테네는 군국주의 체제, 스파르타는 직접민주정이었다",
+      "두 폴리스 모두 동일하게 관직을 추첨제로 선출하였다",
+      "스파르타는 델로스 동맹을 주도하였다"
+    ],
+    ans: 0,
+    exp: "<strong>아테네는 클레이스테네스·페리클레스의 개혁을 거쳐 직접민주정을 발전</strong>시킨 반면, <strong>스파르타는 소수 지배계급인 스파르티아테스가 다수의 헬로트·페리오이코이를 통제하는 군국주의 체제</strong>를 유지하였습니다. 델로스 동맹은 아테네, 펠로폰네소스 동맹은 스파르타가 주도하였습니다.",
+    keywords: ["아테네직접민주정","스파르타군국주의","정치체제차이","델로스동맹"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>
