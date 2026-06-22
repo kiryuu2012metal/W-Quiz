@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로마 공화정 → 원수정 전환 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>로마 공화정 → 원수정 전환 퀴즈</h1>
+    <p>라티푼디움 · 마리우스 개혁 · 술라 · 카이사르 · 아우구스투스 — 4지선다 15문항</p>
+  </header>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 15 완료</div>
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 15</span></div>
+    <h2 id="resultTitle"></h2><p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+<script>
+// 정답 분포: ans:0=4개(Q1,Q3,Q6,Q12), ans:1=4개(Q2,Q5,Q9,Q15), ans:2=4개(Q4,Q7,Q10,Q13), ans:3=3개(Q8,Q11,Q14)
+const ALL_QUESTIONS = [
+  {
+    q: "포에니 전쟁 이후 귀족들이 공유지(ager publicus)를 무단 점거하여 노예 노동으로 운영한 대규모 농장은?",
+    opts: ["라티푼디움","콜로나투스","빌라 루스티카","만수스"],
+    ans: 0,
+    exp: "<strong>라티푼디움(latifundium)</strong>은 포에니 전쟁 이후 귀족이 공유지(ager publicus)를 무단 점거하고 정복지 노예 노동으로 운영한 대규모 농장입니다. 확산으로 자영농이 몰락하고 도시 빈민이 급증하며 공화정의 정치적 균열이 시작되었습니다.",
+    keywords: ["라티푼디움","공유지","노예노동","자영농 몰락"]
+  },
+  {
+    q: "자영농의 몰락이 로마 공화정의 군사적 기반을 위협한 이유로 가장 적절한 것은?",
+    opts: [
+      "자영농이 호민관 선출권을 독점했기 때문에",
+      "자영농이 재산을 보유한 중장보병의 주된 공급원이었기 때문에",
+      "자영농이 원로원의 주요 구성원이었기 때문에",
+      "자영농이 해군 병력의 핵심을 담당했기 때문에"
+    ],
+    ans: 1,
+    exp: "로마 공화정의 군사력은 <strong>일정 재산을 보유한 시민이 자비로 무장하는 중장보병 체제</strong>에 기반하였습니다. 자영농이 몰락하면 재산 기준 충족 시민이 줄어 중장보병 병력이 감소하고, 이는 공화정의 군사·시민 기반을 동시에 약화시켰습니다.",
+    keywords: ["중장보병","재산 기준","시민군","자영농"]
+  },
+  {
+    q: "BC 133년 호민관 티베리우스 그라쿠스가 추진한 개혁의 핵심 내용은?",
+    opts: [
+      "무산시민의 군 입대 허용",
+      "속주 세금 감면 및 재분배",
+      "공유지 재분배를 통한 농지법",
+      "곡물 가격 고정 및 국가 배급"
+    ],
+    ans: 2,
+    exp: "<strong>티베리우스 그라쿠스</strong>는 BC 133년 호민관으로서 <strong>농지법(Lex Sempronia Agraria)</strong>을 추진하여 귀족이 무단 점거한 공유지를 몰수하고 빈민 시민에게 재분배하고자 하였습니다. 동생 가이우스는 BC 121년 곡물법을 추진하였습니다.",
+    keywords: ["티베리우스 그라쿠스","농지법","공유지 재분배","BC 133"]
+  },
+  {
+    q: "그라쿠스 형제의 개혁 실패가 드러낸 로마 공화정의 구조적 한계로 가장 적절한 것은?",
+    opts: [
+      "호민관이 원로원 의석을 갖지 못했기 때문에",
+      "평민회의 결의가 법적 효력을 갖지 못했기 때문에",
+      "그라쿠스 형제가 군사력을 보유하지 못했기 때문에",
+      "다수 민의를 강제할 제도적 장치가 없어 원로원이 폭력으로 개혁을 저지할 수 있었기 때문에"
+    ],
+    ans: 3,
+    exp: "그라쿠스 형제는 민회의 지지를 받았음에도 원로원 귀족에 의해 살해되었습니다. 이는 <strong>다수 민의를 제도적으로 강제할 장치가 공화정에 부재</strong>하였음을 드러냅니다. 원로원의 재산과 조직력 앞에서 호민관의 권한은 폭력에 의해 무력화될 수 있었습니다.",
+    keywords: ["구조적 한계","제도적 장치 미비","원로원 폭력","호민관"]
+  },
+  {
+    q: "그라쿠스 형제 사망 이후 로마 정치권이 분열된 두 세력을 올바르게 짝지은 것은?",
+    opts: [
+      "원로원파 vs 기사계급파",
+      "귀족파(옵티마테스) vs 민중파(포풀라레스)",
+      "공화파 vs 제정파",
+      "집정관파 vs 호민관파"
+    ],
+    ans: 1,
+    exp: "그라쿠스 형제 사망 이후 로마 정치권은 <strong>귀족파(옵티마테스, Optimates)</strong>와 <strong>민중파(포풀라레스, Populares)</strong>로 분열되어 폭력적으로 대립하였습니다. 이 대립은 이후 군인 세력의 정치 개입을 정당화하는 배경이 되었습니다.",
+    keywords: ["옵티마테스","포풀라레스","귀족파","민중파"]
+  },
+  {
+    q: "BC 107년 마리우스가 단행한 군제 개혁의 핵심 내용으로 옳은 것은?",
+    opts: [
+      "재산과 무관하게 무산시민(프롤레타리아)의 입대를 허용하였다",
+      "원로원이 군대 편성권을 직접 관장하게 하였다",
+      "기사계급에게 군사 지휘권을 부여하였다",
+      "속주민에게 로마 시민권을 부여하여 병력을 확충하였다"
+    ],
+    ans: 0,
+    exp: "<strong>마리우스(Gaius Marius)</strong>는 BC 107년 자영농 몰락으로 인한 병력 부족을 해결하기 위해 기존 재산 기준 입대 원칙을 폐지하고 <strong>무산시민(프롤레타리아)의 입대를 허용</strong>하였습니다. 이것이 군대 사병화의 출발점이었습니다.",
+    keywords: ["마리우스","무산시민","프롤레타리아","군제 개혁","BC 107"]
+  },
+  {
+    q: "마리우스 군제 개혁 이후 군대의 충성 대상이 바뀐 결정적 이유는?",
+    opts: [
+      "장군이 호민관 직권을 겸임하게 되었기 때문에",
+      "전쟁 전리품이 국가 금고가 아닌 병사에게 직접 지급되었기 때문에",
+      "국가가 아닌 장군 개인이 병사의 퇴역 후 토지를 보장하게 되었기 때문에",
+      "병사들이 원로원에 직접 청원할 권리를 얻었기 때문에"
+    ],
+    ans: 2,
+    exp: "마리우스 개혁 이후 <strong>장군 개인이 병사의 무장을 제공하고 퇴역 후 토지를 보장</strong>하게 되면서, 병사의 충성 대상이 로마 국가에서 자신의 생계를 책임지는 장군 개인으로 이동하였습니다. 이것이 군대 사병화(私兵化)의 핵심 메커니즘입니다.",
+    keywords: ["퇴역 후 토지 보장","장군 개인 충성","사병화","마리우스"]
+  },
+  {
+    q: "술라가 BC 88년 군대를 이끌고 로마에 진군한 직접적 계기는?",
+    opts: [
+      "카이사르와의 내전에서 선제공격하기 위해",
+      "그라쿠스 개혁을 지지하는 민중파의 봉기를 진압하기 위해",
+      "아우구스투스와 삼두정치를 결성하기 위해",
+      "원로원이 그의 군사 지휘권을 박탈하고 다른 장군에게 넘기려 했기 때문에"
+    ],
+    ans: 3,
+    exp: "<strong>술라(Lucius Cornelius Sulla)</strong>는 미트리다테스 전쟁 지휘권을 원로원이 박탈하고 마리우스에게 넘기려 하자 이에 반발하여, 사병화된 군대를 이끌고 BC 88년 로마에 진군하였습니다. 이것이 무력으로 헌정을 파괴한 최초의 선례가 되었습니다.",
+    keywords: ["술라","BC 88","지휘권 박탈","로마 진군","선례"]
+  },
+  {
+    q: "술라의 로마 진군이 이후 로마 정치에 확립한 '선례(precedent)'의 핵심 내용으로 가장 적절한 것은?",
+    opts: [
+      "평민회의 결의는 원로원 결의보다 우선한다",
+      "충분한 군사력을 가진 장군은 원로원 명령에 불복하고 로마에 진군할 수 있다",
+      "호민관은 독재관보다 상위의 권한을 갖는다",
+      "원로원의 결의는 집정관의 거부권으로 무효화할 수 있다"
+    ],
+    ans: 1,
+    exp: "술라가 진군 후 <strong>처벌받지 않고 독재관직을 유지</strong>한 것이 핵심입니다. 이는 '충분한 군사력을 가진 장군은 원로원 명령을 거부하고 로마에 진군할 수 있다'는 논리를 <strong>정치 문법(선례의 정치)</strong>으로 정착시켰으며, 카이사르의 루비콘 결정은 이 논리의 연장이었습니다.",
+    keywords: ["선례의 정치","처벌 불발","정치 문법","독재관"]
+  },
+  {
+    q: "제1차 삼두정치를 구성한 세 인물을 올바르게 나열한 것은?",
+    opts: [
+      "술라·폼페이우스·카이사르",
+      "카이사르·마리우스·크라수스",
+      "카이사르·폼페이우스·크라수스",
+      "옥타비아누스·안토니우스·레피두스"
+    ],
+    ans: 2,
+    exp: "<strong>제1차 삼두정치(BC 60)</strong>는 카이사르·폼페이우스·크라수스가 결성한 비공식 정치 동맹입니다. 크라수스 사망(BC 53), 폼페이우스와 카이사르의 대립으로 붕괴되었습니다. <strong>제2차 삼두정치(BC 43)</strong>는 옥타비아누스·안토니우스·레피두스가 결성하였습니다.",
+    keywords: ["제1차 삼두정치","카이사르","폼페이우스","크라수스","BC 60"]
+  },
+  {
+    q: "카이사르가 BC 49년 루비콘 강을 건넌 직접적 이유는?",
+    opts: [
+      "갈리아 원정을 완수하고 개선식을 열기 위해",
+      "제2차 삼두정치를 결성하기 위해 옥타비아누스를 만나기 위해",
+      "폼페이우스의 초청으로 로마 방위에 합류하기 위해",
+      "원로원의 군대 해산 명령에 반발하여 내전을 일으키기 위해"
+    ],
+    ans: 3,
+    exp: "갈리아 원정으로 군사력을 키운 카이사르에게 원로원은 <strong>군대 해산 명령</strong>을 내렸습니다. 이에 반발한 카이사르는 BC 49년 루비콘 강을 건너 내전을 일으켰습니다. 이는 술라가 확립한 선례의 논리적 연장이었습니다.",
+    keywords: ["루비콘","BC 49","군대 해산 명령","내전","카이사르"]
+  },
+  {
+    q: "아우구스투스가 공화정 형식을 유지하면서 원수정을 수립한 핵심 이유는?",
+    opts: [
+      "카이사르가 공개적 독재로 암살당한 교훈에서 원로원 반발을 사전 차단하기 위해",
+      "공화정 법률상 황제 즉위가 불법이었기 때문에",
+      "원로원이 황제 칭호 수용을 거부했기 때문에",
+      "민중파(포풀라레스)의 지지가 필요했기 때문에"
+    ],
+    ans: 0,
+    exp: "<strong>카이사르는 종신 독재관으로 1인 지배를 공개화하다가 공화파에게 암살</strong>당하였습니다. 아우구스투스는 이 교훈에서 원로원과 공화정 기관을 형식적으로 유지함으로써 귀족층의 반발을 차단하는 전략을 택하였습니다.",
+    keywords: ["카이사르 암살 교훈","원로원 반발 차단","공화정 형식 유지","전략적 타협"]
+  },
+  {
+    q: "아우구스투스가 실질적 1인 지배를 가능하게 한 세 가지 권한으로 올바른 것은?",
+    opts: [
+      "집정관 종신직·원로원 해산권·사법권",
+      "독재관 직위·군단 지휘권·외교권",
+      "군 통수권(임페라토르)·호민관 직권·속주 통치권",
+      "원로원 의장권·민회 소집권·재정관 직권"
+    ],
+    ans: 2,
+    exp: "아우구스투스는 형식상 공화정을 유지하면서 <strong>군 통수권(임페라토르)</strong>으로 군사력을, <strong>호민관 직권</strong>으로 거부권과 신성불가침을, <strong>속주 통치권</strong>으로 군단이 주둔한 영토를 장악하였습니다. 이 세 권한의 결합이 실질적 1인 지배를 완성하였습니다.",
+    keywords: ["임페라토르","호민관 직권","속주 통치권","1인 지배"]
+  },
+  {
+    q: "아우구스투스가 원로원으로부터 받은 칭호로, '존엄한 자'를 뜻하는 것은?",
+    opts: [
+      "도미누스","임페라토르","프린켑스","아우구스투스"
+    ],
+    ans: 3,
+    exp: "<strong>아우구스투스(Augustus)</strong>는 '존엄한 자'를 뜻하며 원로원이 BC 27년 옥타비아누스에게 부여한 칭호입니다. <strong>프린켑스(Princeps)</strong>는 '제1시민'을 뜻하며 아우구스투스가 스스로 사용한 칭호입니다. 두 칭호 모두 공개적 황제 칭호를 피하면서 최고 권위를 표현하는 장치였습니다.",
+    keywords: ["아우구스투스","프린켑스","제1시민","존엄한 자","BC 27"]
+  },
+  {
+    q: "아우구스투스의 원수정 수립이 서유럽 문명에 미친 역사적 의의로 가장 적절한 것은?",
+    opts: [
+      "공화정 제도를 완전히 폐지하여 효율적인 제국 통치를 가능하게 하였다",
+      "팍스 로마나의 기반을 마련하여 로마법과 라틴 문화의 광범위한 확산을 가능하게 하였다",
+      "기독교를 공인하여 서유럽 중세 문화의 토대를 직접 형성하였다",
+      "그리스 민주주의 원리를 로마 전역에 확산시켰다"
+    ],
+    ans: 1,
+    exp: "아우구스투스의 원수정은 <strong>팍스 로마나(Pax Romana, 약 200년간의 로마 평화)</strong>의 제도적 기반이 되었습니다. 안정된 제국 체제 아래 <strong>로마법</strong>과 <strong>라틴 문화</strong>가 광범위하게 확산되어 서유럽 문명 형성에 지대한 영향을 미쳤습니다. 기독교 공인은 콘스탄티누스 황제(313년)의 업적입니다.",
+    keywords: ["팍스 로마나","로마법","라틴 문화","서유럽 문명"]
+  }
+];
+
+let currentQuestions = [], wrongIds = [], answered = [], score = 0;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions; wrongIds = [];
+  answered = new Array(questions.length).fill(false); score = 0;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll(); updateProgress();
+}
+
+function renderAll() {
+  document.getElementById('quizArea').innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    '<button class="opt-btn" id="opt_'+i+'_'+oi+'" onclick="choose('+i+','+oi+')">' + String.fromCharCode(9312+oi) + ' ' + o + '</button>'
+  ).join('');
+  const kwHtml = q.keywords.map(k => '<span class="keyword-chip">'+k+'</span>').join('');
+  return '<div class="quiz-card" id="card_'+i+'"><span class="q-num">Q'+(i+1)+'</span><p class="q-text">'+q.q+'</p><div class="options">'+optsHtml+'</div><div class="explanation" id="exp_'+i+'"><p>'+q.exp+'</p><div style="margin-top:0.5rem;">'+kwHtml+'</div></div></div>';
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) score++; else wrongIds.push(qIdx);
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById('opt_'+qIdx+'_'+i);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById('exp_'+qIdx).classList.add('show');
+  updateProgress();
+  if (answered.every(Boolean)) setTimeout(showResult, 600);
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length, total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = done + ' / ' + total + ' 완료';
+}
+
+function showResult() {
+  const total = currentQuestions.length, pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = '/ ' + total;
+  const titles = ['다시 도전해 보세요','기초를 다져봅시다','조금 더 공부가 필요해요','잘 이해하고 있어요','거의 완벽해요','만점! 완벽합니다'];
+  const msgs = ['모범답안의 키워드를 다시 정리해 보세요.','필수 키워드 표를 먼저 암기해 보세요.','틀린 문제의 해설을 꼼꼼히 읽어보세요.','오답 문제를 한 번 더 풀어보면 완성됩니다.','핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.','이 주제는 완벽하게 정복했습니다!'];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  init(wrongIds.map(i => currentQuestions[i]), true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>
